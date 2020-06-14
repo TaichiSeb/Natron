@@ -26,17 +26,18 @@
 #include <Python.h>
 // ***** END PYTHON BLOCK *****
 
-#include "Global/Macros.h"
+#include <Enums.h>
 
 //Defined to avoid including some headers when running shiboken which may crash shiboken (particularly boost headers)
 #define SBK_RUN
 
-#include <pyside_global.h>
+#include "Global/Macros.h"
+
+#include <pyside2_global.h>
 #include <QtGui/qpytextobject.h>
 
 //Global
 #include <GlobalDefines.h>
-#include <Enums.h>
 
 //Engine
 #include "PyExprUtils.h"

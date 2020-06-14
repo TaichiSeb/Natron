@@ -71,7 +71,7 @@
             </target-to-native>
         </conversion-rule>
     </container-type>
-    
+
     <!--Templates for type conversions used many times-->
     <template name="stdListToPyList">
         PyObject* %out = PyList_New((int) %in.size());
@@ -210,7 +210,7 @@
     </container-type>
 
      <!--Natron global enums-->
-    <namespace-type name="NATRON_NAMESPACE">
+    <namespace-type name="Natron">
     <enum-type name="StatusEnum"/>
     <enum-type name="MergingFunctionEnum"/>
     <enum-type name="StandardButtonEnum" flags="StandardButtons"/>
@@ -225,22 +225,25 @@
     <enum-type name="OrientationEnum"/>
     <enum-type name="PlaybackModeEnum"/>
     <enum-type name="DisplayChannelsEnum"/>
+    <enum-type name="KeyboardModifierEnum" flags="KeyboardModifiers"/>
+    <enum-type name="AppInstanceStatusEnum"/>
     </namespace-type>
     
    
+   <namespace-type name="Natron">
    <object-type name="RectI">
-       <modify-function signature="operator=(RectI)" remove="all"/>
+       <modify-function signature="operator=(Natron::RectI)" remove="all"/>
        <modify-function signature="upscalePowerOfTwo(unsigned int)const" remove="all"/>
        <modify-function signature="downscalePowerOfTwo(unsigned int)const" remove="all"/>
        <modify-function signature="roundPowerOfTwoLargestEnclosed(unsigned int)const" remove="all"/>
        <modify-function signature="roundPowerOfTwoSmallestEnclosing(unsigned int)const" remove="all"/>
        <modify-function signature="downscalePowerOfTwoLargestEnclosed(unsigned int)const" remove="all"/>
        <modify-function signature="downscalePowerOfTwoSmallestEnclosing(unsigned int)const" remove="all"/>
-       <modify-function signature="toCanonical(unsigned int,double,RectD,RectD*)const" remove="all"/>
-       <modify-function signature="toCanonical_noClipping(unsigned int,double,RectD*)const" remove="all"/>
+       <modify-function signature="toCanonical(unsigned int,double,Natron::RectD,Natron::RectD*)const" remove="all"/>
+       <modify-function signature="toCanonical_noClipping(unsigned int,double,Natron::RectD*)const" remove="all"/>
        <modify-function signature="debug()const" remove="all"/>
        <modify-function signature="splitIntoSmallerRects(int)const" remove="all"/>
-       <modify-function signature="intersect(RectI,RectI*)const">
+       <modify-function signature="intersect(Natron::RectI,Natron::RectI*)const">
            <modify-argument index="2">
                <remove-argument/>
            </modify-argument>
@@ -248,13 +251,13 @@
                <replace-type modified-type="RectI"/>
            </modify-argument>
            <inject-code class="target" position="beginning">
-               RectI t;
+               Natron::RectI t;
                %CPPSELF.%FUNCTION_NAME(%1,&amp;t);
-               %PYARG_0 = %CONVERTTOPYTHON[RectI](t);
+               %PYARG_0 = %CONVERTTOPYTHON[Natron::RectI](t);
                return %PYARG_0;
            </inject-code>
        </modify-function>
-       <modify-function signature="intersect(int,int,int,int,RectI*)const">
+       <modify-function signature="intersect(int,int,int,int,Natron::RectI*)const">
            <modify-argument index="5">
                <remove-argument/>
            </modify-argument>
@@ -262,16 +265,51 @@
                <replace-type modified-type="RectI"/>
            </modify-argument>
            <inject-code class="target" position="beginning">
-               RectI t;
+               Natron::RectI t;
                %CPPSELF.%FUNCTION_NAME(%1,%2,%3,%4,&amp;t);
-               %PYARG_0 = %CONVERTTOPYTHON[RectI](t);
+               %PYARG_0 = %CONVERTTOPYTHON[Natron::RectI](t);
+               return %PYARG_0;
+           </inject-code>
+       </modify-function>
+   </object-type>
+   <object-type name="RectD">
+       <modify-function signature="operator=(Natron::RectD)" remove="all"/>
+       <modify-function signature="debug()const" remove="all"/>
+       <modify-function signature="toPixelEnclosing(unsigned int,double,Natron::RectI*)const" remove="all"/>
+       <modify-function signature="intersect(Natron::RectD,Natron::RectD*)const">
+           <modify-argument index="2">
+               <remove-argument/>
+           </modify-argument>
+           <modify-argument index="return">
+               <replace-type modified-type="RectD"/>
+           </modify-argument>
+           <inject-code class="target" position="beginning">
+               Natron::RectD t;
+               %CPPSELF.%FUNCTION_NAME(%1,&amp;t);
+               %PYARG_0 = %CONVERTTOPYTHON[Natron::RectD](t);
+               return %PYARG_0;
+           </inject-code>
+       </modify-function>
+       <modify-function signature="intersect(double,double,double,double,Natron::RectD*)const">
+           <modify-argument index="5">
+               <remove-argument/>
+           </modify-argument>
+           <modify-argument index="return">
+               <replace-type modified-type="RectD"/>
+           </modify-argument>
+           <inject-code class="target" position="beginning">
+               Natron::RectD t;
+               %CPPSELF.%FUNCTION_NAME(%1,%2,%3,%4,&amp;t);
+               %PYARG_0 = %CONVERTTOPYTHON[Natron::RectD](t);
                return %PYARG_0;
            </inject-code>
        </modify-function>
    </object-type>
 
+   <namespace-type name="Python">
+
    <object-type name="ExprUtils">
-       <modify-function signature="noise(Double2DTuple)">
+       <modify-function signature="noise(Natron::Python::Double2DTuple)">
            <modify-argument index="1">
                <replace-type modified-type="PyObject"/>
            </modify-argument>
@@ -286,18 +324,18 @@
                double x1 = %CONVERTTOCPP[double](PyTuple_GET_ITEM(%PYARG_1, 0));
                if (tupleSize == 2) {
                 double x2 = %CONVERTTOCPP[double](PyTuple_GET_ITEM(%PYARG_1, 1));
-                Double2DTuple p = {x1, x2};
+                Natron::Python::Double2DTuple p = {x1, x2};
                 ret = %CPPSELF.%FUNCTION_NAME(p);
                } else if (tupleSize == 3) {
                 double x2 = %CONVERTTOCPP[double](PyTuple_GET_ITEM(%PYARG_1, 1));
                 double x3 = %CONVERTTOCPP[double](PyTuple_GET_ITEM(%PYARG_1, 2));
-                Double3DTuple p = {x1, x2, x3};
+                Natron::Python::Double3DTuple p = {x1, x2, x3};
                 ret = %CPPSELF.%FUNCTION_NAME(p);
                } else if (tupleSize == 4) {
                 double x2 = %CONVERTTOCPP[double](PyTuple_GET_ITEM(%PYARG_1, 1));
                 double x3 = %CONVERTTOCPP[double](PyTuple_GET_ITEM(%PYARG_1, 2));
                 double x4 = %CONVERTTOCPP[double](PyTuple_GET_ITEM(%PYARG_1, 3));
-                ColorTuple p = {x1, x2, x3, x4};
+                Natron::Python::ColorTuple p = {x1, x2, x3, x4};
                 ret = %CPPSELF.%FUNCTION_NAME(p);
                }
                %PYARG_0 = %CONVERTTOPYTHON[double](ret);
@@ -306,9 +344,9 @@
            </inject-code>
 
        </modify-function>
-       <modify-function signature="noise(Double3DTuple)" remove="all"/>
-       <modify-function signature="noise(ColorTuple)" remove="all"/>
-       <modify-function signature="snoise(Double3DTuple)">
+       <modify-function signature="noise(Natron::Python::Double3DTuple)" remove="all"/>
+       <modify-function signature="noise(Natron::Python::ColorTuple)" remove="all"/>
+       <modify-function signature="snoise(Natron::Python::Double3DTuple)">
            <modify-argument index="1">
                <replace-type modified-type="PyObject"/>
            </modify-argument>
@@ -321,13 +359,13 @@
                double x1 = %CONVERTTOCPP[double](PyTuple_GET_ITEM(%PYARG_1, 0));
                double x2 = %CONVERTTOCPP[double](PyTuple_GET_ITEM(%PYARG_1, 1));
                double x3 = %CONVERTTOCPP[double](PyTuple_GET_ITEM(%PYARG_1, 2));
-               Double3DTuple p = {x1, x2, x3};
+               Natron::Python::Double3DTuple p = {x1, x2, x3};
                double ret = %CPPSELF.%FUNCTION_NAME(p);
                %PYARG_0 = %CONVERTTOPYTHON[double](ret);
                return %PYARG_0;
            </inject-code>
        </modify-function>
-       <modify-function signature="vnoise(Double3DTuple)">
+       <modify-function signature="vnoise(Natron::Python::Double3DTuple)">
            <modify-argument index="1">
                <replace-type modified-type="PyObject"/>
            </modify-argument>
@@ -343,8 +381,8 @@
                double x1 = %CONVERTTOCPP[double](PyTuple_GET_ITEM(%PYARG_1, 0));
                double x2 = %CONVERTTOCPP[double](PyTuple_GET_ITEM(%PYARG_1, 1));
                double x3 = %CONVERTTOCPP[double](PyTuple_GET_ITEM(%PYARG_1, 2));
-               Double3DTuple p = {x1, x2, x3};
-               Double3DTuple ret = %CPPSELF.%FUNCTION_NAME(p);
+               Natron::Python::Double3DTuple p = {x1, x2, x3};
+               Natron::Python::Double3DTuple ret = %CPPSELF.%FUNCTION_NAME(p);
                %PYARG_0 = PyTuple_New(3);
                PyTuple_SET_ITEM(%PYARG_0, 0, %CONVERTTOPYTHON[double](ret.x));
                PyTuple_SET_ITEM(%PYARG_0, 1, %CONVERTTOPYTHON[double](ret.y));
@@ -352,7 +390,7 @@
                return %PYARG_0;
            </inject-code>
        </modify-function>
-       <modify-function signature="cnoise(Double3DTuple)">
+       <modify-function signature="cnoise(Natron::Python::Double3DTuple)">
            <modify-argument index="1">
                <replace-type modified-type="PyObject"/>
            </modify-argument>
@@ -368,8 +406,8 @@
                double x1 = %CONVERTTOCPP[double](PyTuple_GET_ITEM(%PYARG_1, 0));
                double x2 = %CONVERTTOCPP[double](PyTuple_GET_ITEM(%PYARG_1, 1));
                double x3 = %CONVERTTOCPP[double](PyTuple_GET_ITEM(%PYARG_1, 2));
-               Double3DTuple p = {x1, x2, x3};
-               Double3DTuple ret = %CPPSELF.%FUNCTION_NAME(p);
+               Natron::Python::Double3DTuple p = {x1, x2, x3};
+               Natron::Python::Double3DTuple ret = %CPPSELF.%FUNCTION_NAME(p);
                %PYARG_0 = PyTuple_New(3);
                PyTuple_SET_ITEM(%PYARG_0, 0, %CONVERTTOPYTHON[double](ret.x));
                PyTuple_SET_ITEM(%PYARG_0, 1, %CONVERTTOPYTHON[double](ret.y));
@@ -377,7 +415,7 @@
                return %PYARG_0;
            </inject-code>
        </modify-function>
-       <modify-function signature="snoise4(ColorTuple)">
+       <modify-function signature="snoise4(Natron::Python::ColorTuple)">
            <modify-argument index="1">
                <replace-type modified-type="PyObject"/>
            </modify-argument>
@@ -391,13 +429,13 @@
                double x2 = %CONVERTTOCPP[double](PyTuple_GET_ITEM(%PYARG_1, 1));
                double x3 = %CONVERTTOCPP[double](PyTuple_GET_ITEM(%PYARG_1, 2));
                double x4 = %CONVERTTOCPP[double](PyTuple_GET_ITEM(%PYARG_1, 3));
-               ColorTuple p = {x1, x2, x3, x4};
+               Natron::Python::ColorTuple p = {x1, x2, x3, x4};
                double ret = %CPPSELF.%FUNCTION_NAME(p);
                %PYARG_0 = %CONVERTTOPYTHON[double](ret);
                return %PYARG_0;
            </inject-code>
        </modify-function>
-       <modify-function signature="vnoise4(ColorTuple)">
+       <modify-function signature="vnoise4(Natron::Python::ColorTuple)">
            <modify-argument index="1">
                <replace-type modified-type="PyObject"/>
            </modify-argument>
@@ -414,8 +452,8 @@
                double x2 = %CONVERTTOCPP[double](PyTuple_GET_ITEM(%PYARG_1, 1));
                double x3 = %CONVERTTOCPP[double](PyTuple_GET_ITEM(%PYARG_1, 2));
                double x4 = %CONVERTTOCPP[double](PyTuple_GET_ITEM(%PYARG_1, 3));
-               ColorTuple p = {x1, x2, x3, x4};
-               Double3DTuple ret = %CPPSELF.%FUNCTION_NAME(p);
+               Natron::Python::ColorTuple p = {x1, x2, x3, x4};
+               Natron::Python::Double3DTuple ret = %CPPSELF.%FUNCTION_NAME(p);
                %PYARG_0 = PyTuple_New(3);
                PyTuple_SET_ITEM(%PYARG_0, 0, %CONVERTTOPYTHON[double](ret.x));
                PyTuple_SET_ITEM(%PYARG_0, 1, %CONVERTTOPYTHON[double](ret.y));
@@ -423,7 +461,7 @@
                return %PYARG_0;
            </inject-code>
        </modify-function>
-       <modify-function signature="cnoise4(ColorTuple)">
+       <modify-function signature="cnoise4(Natron::Python::ColorTuple)">
            <modify-argument index="1">
                <replace-type modified-type="PyObject"/>
            </modify-argument>
@@ -440,8 +478,8 @@
                double x2 = %CONVERTTOCPP[double](PyTuple_GET_ITEM(%PYARG_1, 1));
                double x3 = %CONVERTTOCPP[double](PyTuple_GET_ITEM(%PYARG_1, 2));
                double x4 = %CONVERTTOCPP[double](PyTuple_GET_ITEM(%PYARG_1, 3));
-               ColorTuple p = {x1, x2, x3, x4};
-               Double3DTuple ret = %CPPSELF.%FUNCTION_NAME(p);
+               Natron::Python::ColorTuple p = {x1, x2, x3, x4};
+               Natron::Python::Double3DTuple ret = %CPPSELF.%FUNCTION_NAME(p);
                %PYARG_0 = PyTuple_New(3);
                PyTuple_SET_ITEM(%PYARG_0, 0, %CONVERTTOPYTHON[double](ret.x));
                PyTuple_SET_ITEM(%PYARG_0, 1, %CONVERTTOPYTHON[double](ret.y));
@@ -449,7 +487,7 @@
                return %PYARG_0;
            </inject-code>
        </modify-function>
-       <modify-function signature="turbulence(Double3DTuple,int,double,double)">
+       <modify-function signature="turbulence(Natron::Python::Double3DTuple,int,double,double)">
            <modify-argument index="1">
                <replace-type modified-type="PyObject"/>
            </modify-argument>
@@ -462,13 +500,13 @@
                double x1 = %CONVERTTOCPP[double](PyTuple_GET_ITEM(%PYARG_1, 0));
                double x2 = %CONVERTTOCPP[double](PyTuple_GET_ITEM(%PYARG_1, 1));
                double x3 = %CONVERTTOCPP[double](PyTuple_GET_ITEM(%PYARG_1, 2));
-               Double3DTuple p = {x1, x2, x3};
+               Natron::Python::Double3DTuple p = {x1, x2, x3};
                double ret = %CPPSELF.%FUNCTION_NAME(p, %2, %3, %4);
                %PYARG_0 = %CONVERTTOPYTHON[double](ret);
                return %PYARG_0;
            </inject-code>
        </modify-function>
-       <modify-function signature="vturbulence(Double3DTuple,int,double,double)">
+       <modify-function signature="vturbulence(Natron::Python::Double3DTuple,int,double,double)">
            <modify-argument index="1">
                <replace-type modified-type="PyObject"/>
            </modify-argument>
@@ -484,8 +522,8 @@
                double x1 = %CONVERTTOCPP[double](PyTuple_GET_ITEM(%PYARG_1, 0));
                double x2 = %CONVERTTOCPP[double](PyTuple_GET_ITEM(%PYARG_1, 1));
                double x3 = %CONVERTTOCPP[double](PyTuple_GET_ITEM(%PYARG_1, 2));
-               Double3DTuple p = {x1, x2, x3};
-               Double3DTuple ret = %CPPSELF.%FUNCTION_NAME(p, %2, %3, %4);
+               Natron::Python::Double3DTuple p = {x1, x2, x3};
+               Natron::Python::Double3DTuple ret = %CPPSELF.%FUNCTION_NAME(p, %2, %3, %4);
                %PYARG_0 = PyTuple_New(3);
                PyTuple_SET_ITEM(%PYARG_0, 0, %CONVERTTOPYTHON[double](ret.x));
                PyTuple_SET_ITEM(%PYARG_0, 1, %CONVERTTOPYTHON[double](ret.y));
@@ -493,7 +531,7 @@
                return %PYARG_0;
            </inject-code>
        </modify-function>
-       <modify-function signature="cturbulence(Double3DTuple,int,double,double)">
+       <modify-function signature="cturbulence(Natron::Python::Double3DTuple,int,double,double)">
            <modify-argument index="1">
                <replace-type modified-type="PyObject"/>
            </modify-argument>
@@ -509,8 +547,8 @@
                double x1 = %CONVERTTOCPP[double](PyTuple_GET_ITEM(%PYARG_1, 0));
                double x2 = %CONVERTTOCPP[double](PyTuple_GET_ITEM(%PYARG_1, 1));
                double x3 = %CONVERTTOCPP[double](PyTuple_GET_ITEM(%PYARG_1, 2));
-               Double3DTuple p = {x1, x2, x3};
-               Double3DTuple ret = %CPPSELF.%FUNCTION_NAME(p, %2, %3, %4);
+               Natron::Python::Double3DTuple p = {x1, x2, x3};
+               Natron::Python::Double3DTuple ret = %CPPSELF.%FUNCTION_NAME(p, %2, %3, %4);
                %PYARG_0 = PyTuple_New(3);
                PyTuple_SET_ITEM(%PYARG_0, 0, %CONVERTTOPYTHON[double](ret.x));
                PyTuple_SET_ITEM(%PYARG_0, 1, %CONVERTTOPYTHON[double](ret.y));
@@ -518,7 +556,7 @@
                return %PYARG_0;
            </inject-code>
        </modify-function>
-       <modify-function signature="fbm(Double3DTuple,int,double,double)">
+       <modify-function signature="fbm(Natron::Python::Double3DTuple,int,double,double)">
            <modify-argument index="1">
                <replace-type modified-type="PyObject"/>
            </modify-argument>
@@ -531,13 +569,13 @@
                double x1 = %CONVERTTOCPP[double](PyTuple_GET_ITEM(%PYARG_1, 0));
                double x2 = %CONVERTTOCPP[double](PyTuple_GET_ITEM(%PYARG_1, 1));
                double x3 = %CONVERTTOCPP[double](PyTuple_GET_ITEM(%PYARG_1, 2));
-               Double3DTuple p = {x1, x2, x3};
+               Natron::Python::Double3DTuple p = {x1, x2, x3};
                double ret = %CPPSELF.%FUNCTION_NAME(p, %2, %3, %4);
                %PYARG_0 = %CONVERTTOPYTHON[double](ret);
                return %PYARG_0;
            </inject-code>
        </modify-function>
-       <modify-function signature="vfbm(Double3DTuple,int,double,double)">
+       <modify-function signature="vfbm(Natron::Python::Double3DTuple,int,double,double)">
            <modify-argument index="1">
                <replace-type modified-type="PyObject"/>
            </modify-argument>
@@ -553,8 +591,8 @@
                double x1 = %CONVERTTOCPP[double](PyTuple_GET_ITEM(%PYARG_1, 0));
                double x2 = %CONVERTTOCPP[double](PyTuple_GET_ITEM(%PYARG_1, 1));
                double x3 = %CONVERTTOCPP[double](PyTuple_GET_ITEM(%PYARG_1, 2));
-               Double3DTuple p = {x1, x2, x3};
-               Double3DTuple ret = %CPPSELF.%FUNCTION_NAME(p, %2, %3, %4);
+               Natron::Python::Double3DTuple p = {x1, x2, x3};
+               Natron::Python::Double3DTuple ret = %CPPSELF.%FUNCTION_NAME(p, %2, %3, %4);
                %PYARG_0 = PyTuple_New(3);
                PyTuple_SET_ITEM(%PYARG_0, 0, %CONVERTTOPYTHON[double](ret.x));
                PyTuple_SET_ITEM(%PYARG_0, 1, %CONVERTTOPYTHON[double](ret.y));
@@ -562,7 +600,7 @@
                return %PYARG_0;
            </inject-code>
        </modify-function>
-       <modify-function signature="fbm4(ColorTuple,int,double,double)">
+       <modify-function signature="fbm4(Natron::Python::ColorTuple,int,double,double)">
            <modify-argument index="1">
                <replace-type modified-type="PyObject"/>
            </modify-argument>
@@ -576,13 +614,13 @@
                double x2 = %CONVERTTOCPP[double](PyTuple_GET_ITEM(%PYARG_1, 1));
                double x3 = %CONVERTTOCPP[double](PyTuple_GET_ITEM(%PYARG_1, 2));
                double x4 = %CONVERTTOCPP[double](PyTuple_GET_ITEM(%PYARG_1, 3));
-               ColorTuple p = {x1, x2, x3, x4};
+               Natron::Python::ColorTuple p = {x1, x2, x3, x4};
                double ret = %CPPSELF.%FUNCTION_NAME(p, %2, %3, %4);
                %PYARG_0 = %CONVERTTOPYTHON[double](ret);
                return %PYARG_0;
            </inject-code>
        </modify-function>
-       <modify-function signature="vfbm4(ColorTuple,int,double,double)">
+       <modify-function signature="vfbm4(Natron::Python::ColorTuple,int,double,double)">
            <modify-argument index="1">
                <replace-type modified-type="PyObject"/>
            </modify-argument>
@@ -599,8 +637,8 @@
                double x2 = %CONVERTTOCPP[double](PyTuple_GET_ITEM(%PYARG_1, 1));
                double x3 = %CONVERTTOCPP[double](PyTuple_GET_ITEM(%PYARG_1, 2));
                double x4 = %CONVERTTOCPP[double](PyTuple_GET_ITEM(%PYARG_1, 3));
-               ColorTuple p = {x1, x2, x3, x4};
-               Double3DTuple ret = %CPPSELF.%FUNCTION_NAME(p, %2, %3, %4);
+               Natron::Python::ColorTuple p = {x1, x2, x3, x4};
+               Natron::Python::Double3DTuple ret = %CPPSELF.%FUNCTION_NAME(p, %2, %3, %4);
                %PYARG_0 = PyTuple_New(3);
                PyTuple_SET_ITEM(%PYARG_0, 0, %CONVERTTOPYTHON[double](ret.x));
                PyTuple_SET_ITEM(%PYARG_0, 1, %CONVERTTOPYTHON[double](ret.y));
@@ -608,7 +646,7 @@
                return %PYARG_0;
            </inject-code>
        </modify-function>
-       <modify-function signature="cfbm(Double3DTuple,int,double,double)">
+       <modify-function signature="cfbm(Natron::Python::Double3DTuple,int,double,double)">
            <modify-argument index="1">
                <replace-type modified-type="PyObject"/>
            </modify-argument>
@@ -624,8 +662,8 @@
                double x1 = %CONVERTTOCPP[double](PyTuple_GET_ITEM(%PYARG_1, 0));
                double x2 = %CONVERTTOCPP[double](PyTuple_GET_ITEM(%PYARG_1, 1));
                double x3 = %CONVERTTOCPP[double](PyTuple_GET_ITEM(%PYARG_1, 2));
-               Double3DTuple p = {x1, x2, x3};
-               Double3DTuple ret = %CPPSELF.%FUNCTION_NAME(p, %2, %3, %4);
+               Natron::Python::Double3DTuple p = {x1, x2, x3};
+               Natron::Python::Double3DTuple ret = %CPPSELF.%FUNCTION_NAME(p, %2, %3, %4);
                %PYARG_0 = PyTuple_New(3);
                PyTuple_SET_ITEM(%PYARG_0, 0, %CONVERTTOPYTHON[double](ret.x));
                PyTuple_SET_ITEM(%PYARG_0, 1, %CONVERTTOPYTHON[double](ret.y));
@@ -633,7 +671,7 @@
                return %PYARG_0;
            </inject-code>
        </modify-function>
-       <modify-function signature="cfbm4(ColorTuple,int,double,double)">
+       <modify-function signature="cfbm4(Natron::Python::ColorTuple,int,double,double)">
            <modify-argument index="1">
                <replace-type modified-type="PyObject"/>
            </modify-argument>
@@ -650,8 +688,8 @@
                double x2 = %CONVERTTOCPP[double](PyTuple_GET_ITEM(%PYARG_1, 1));
                double x3 = %CONVERTTOCPP[double](PyTuple_GET_ITEM(%PYARG_1, 2));
                double x4 = %CONVERTTOCPP[double](PyTuple_GET_ITEM(%PYARG_1, 3));
-               ColorTuple p = {x1, x2, x3, x4};
-               Double3DTuple ret = %CPPSELF.%FUNCTION_NAME(p, %2, %3, %4);
+               Natron::Python::ColorTuple p = {x1, x2, x3, x4};
+               Natron::Python::Double3DTuple ret = %CPPSELF.%FUNCTION_NAME(p, %2, %3, %4);
                %PYARG_0 = PyTuple_New(3);
                PyTuple_SET_ITEM(%PYARG_0, 0, %CONVERTTOPYTHON[double](ret.x));
                PyTuple_SET_ITEM(%PYARG_0, 1, %CONVERTTOPYTHON[double](ret.y));
@@ -659,7 +697,7 @@
                return %PYARG_0;
            </inject-code>
        </modify-function>
-       <modify-function signature="cellnoise(Double3DTuple)">
+       <modify-function signature="cellnoise(Natron::Python::Double3DTuple)">
            <modify-argument index="1">
                <replace-type modified-type="PyObject"/>
            </modify-argument>
@@ -672,13 +710,13 @@
                double x1 = %CONVERTTOCPP[double](PyTuple_GET_ITEM(%PYARG_1, 0));
                double x2 = %CONVERTTOCPP[double](PyTuple_GET_ITEM(%PYARG_1, 1));
                double x3 = %CONVERTTOCPP[double](PyTuple_GET_ITEM(%PYARG_1, 2));
-               Double3DTuple p = {x1, x2, x3};
+               Natron::Python::Double3DTuple p = {x1, x2, x3};
                double ret = %CPPSELF.%FUNCTION_NAME(p);
                %PYARG_0 = %CONVERTTOPYTHON[double](ret);
                return %PYARG_0;
            </inject-code>
        </modify-function>
-       <modify-function signature="ccellnoise(Double3DTuple)">
+       <modify-function signature="ccellnoise(Natron::Python::Double3DTuple)">
            <modify-argument index="1">
                <replace-type modified-type="PyObject"/>
            </modify-argument>
@@ -694,8 +732,8 @@
                double x1 = %CONVERTTOCPP[double](PyTuple_GET_ITEM(%PYARG_1, 0));
                double x2 = %CONVERTTOCPP[double](PyTuple_GET_ITEM(%PYARG_1, 1));
                double x3 = %CONVERTTOCPP[double](PyTuple_GET_ITEM(%PYARG_1, 2));
-               Double3DTuple p = {x1, x2, x3};
-               Double3DTuple ret = %CPPSELF.%FUNCTION_NAME(p);
+               Natron::Python::Double3DTuple p = {x1, x2, x3};
+               Natron::Python::Double3DTuple ret = %CPPSELF.%FUNCTION_NAME(p);
                %PYARG_0 = PyTuple_New(3);
                PyTuple_SET_ITEM(%PYARG_0, 0, %CONVERTTOPYTHON[double](ret.x));
                PyTuple_SET_ITEM(%PYARG_0, 1, %CONVERTTOPYTHON[double](ret.y));
@@ -703,7 +741,7 @@
                return %PYARG_0;
            </inject-code>
        </modify-function>
-       <modify-function signature="pnoise(Double3DTuple,Double3DTuple)">
+       <modify-function signature="pnoise(Natron::Python::Double3DTuple,Natron::Python::Double3DTuple)">
            <modify-argument index="1">
                <replace-type modified-type="PyObject"/>
            </modify-argument>
@@ -727,8 +765,8 @@
                double p1 = %CONVERTTOCPP[double](PyTuple_GET_ITEM(%PYARG_2, 0));
                double p2 = %CONVERTTOCPP[double](PyTuple_GET_ITEM(%PYARG_2, 1));
                double p3 = %CONVERTTOCPP[double](PyTuple_GET_ITEM(%PYARG_2, 2));
-               Double3DTuple p = {x1, x2, x3};
-               Double3DTuple period = {p1, p2, p3};
+               Natron::Python::Double3DTuple p = {x1, x2, x3};
+               Natron::Python::Double3DTuple period = {p1, p2, p3};
                double ret = %CPPSELF.%FUNCTION_NAME(p, period);
                %PYARG_0 = %CONVERTTOPYTHON[double](ret);
                return %PYARG_0;
@@ -736,42 +774,8 @@
        </modify-function>
 
    </object-type>
-   <object-type name="RectD">
-       <modify-function signature="operator=(RectD)" remove="all"/>
-       <modify-function signature="debug()const" remove="all"/>
-       <modify-function signature="toPixelEnclosing(unsigned int,double,RectI*)const" remove="all"/>
-       <modify-function signature="intersect(RectD,RectD*)const">
-           <modify-argument index="2">
-               <remove-argument/>
-           </modify-argument>
-           <modify-argument index="return">
-               <replace-type modified-type="RectD"/>
-           </modify-argument>
-           <inject-code class="target" position="beginning">
-               RectD t;
-               %CPPSELF.%FUNCTION_NAME(%1,&amp;t);
-               %PYARG_0 = %CONVERTTOPYTHON[RectD](t);
-               return %PYARG_0;
-           </inject-code>
-       </modify-function>
-       <modify-function signature="intersect(double,double,double,double,RectD*)const">
-           <modify-argument index="5">
-               <remove-argument/>
-           </modify-argument>
-           <modify-argument index="return">
-               <replace-type modified-type="RectD"/>
-           </modify-argument>
-           <inject-code class="target" position="beginning">
-               RectD t;
-               %CPPSELF.%FUNCTION_NAME(%1,%2,%3,%4,&amp;t);
-               %PYARG_0 = %CONVERTTOPYTHON[RectD](t);
-               return %PYARG_0;
-           </inject-code>
-       </modify-function>
-       
-   </object-type>
 
-    <value-type name="ImageLayer" copyable="true" hash-function="ImageLayer::getHash">
+    <value-type name="ImageLayer" copyable="true" hash-function="Natron::Python::ImageLayer::getHash">
     </value-type>
     
     <object-type name="Group" copyable="false">
@@ -787,11 +791,11 @@
         </modify-function>
         <modify-function signature="getChildren()const">
             <inject-code class="target" position="beginning">
-                std::list&lt;Effect*&gt; effects = %CPPSELF.%FUNCTION_NAME(%ARGUMENT_NAMES);
+                std::list&lt;Natron::Python::Effect*&gt; effects = %CPPSELF.%FUNCTION_NAME(%ARGUMENT_NAMES);
                 PyObject* ret = PyList_New((int) effects.size());
                 int idx = 0;
-                for (std::list&lt;Effect*&gt;::iterator it = effects.begin(); it!=effects.end(); ++it,++idx) {
-                PyObject* item = %CONVERTTOPYTHON[Effect*](*it);
+                for (std::list&lt;Natron::Python::Effect*&gt;::iterator it = effects.begin(); it!=effects.end(); ++it,++idx) {
+                PyObject* item = %CONVERTTOPYTHON[Natron::Python::Effect*](*it);
                 // Ownership transferences.
                 Shiboken::Object::getOwnership(item);
                 PyList_SET_ITEM(ret, idx, item);
@@ -811,8 +815,9 @@
     </object-type>
     <object-type name="StringNodeCreationProperty">
     </object-type>
+
     <object-type name="App" copyable="false">
-        <modify-function signature="createNode(QString,int,Group*, std::map&lt; QString, NodeCreationProperty* &gt;)const">
+        <modify-function signature="createNode(QString,int,Natron::Python::Group*, std::map&lt; QString, Natron::Python::NodeCreationProperty* &gt;)const">
             <modify-argument index="return">
                 <define-ownership class="target" owner="target"/>
             </modify-argument>
@@ -821,7 +826,7 @@
                 %PYARG_0 = %CONVERTTOPYTHON[%RETURN_TYPE](%0);
             </inject-code>
         </modify-function>
-        <modify-function signature="createReader(QString,Group*,std::map&lt; QString, NodeCreationProperty* &gt;)const">
+        <modify-function signature="createReader(QString,Natron::Python::Group*,std::map&lt; QString, Natron::Python::NodeCreationProperty* &gt;)const">
             <modify-argument index="return">
                 <define-ownership class="target" owner="target"/>
             </modify-argument>
@@ -830,7 +835,7 @@
                 %PYARG_0 = %CONVERTTOPYTHON[%RETURN_TYPE](%0);
             </inject-code>
         </modify-function>
-        <modify-function signature="createWriter(QString,Group*, std::map&lt;QString, NodeCreationProperty* &gt;)const">
+        <modify-function signature="createWriter(QString,Natron::Python::Group*, std::map&lt;QString, Natron::Python::NodeCreationProperty* &gt;)const">
             <modify-argument index="return">
                 <define-ownership class="target" owner="target"/>
             </modify-argument>
@@ -844,9 +849,9 @@
                 <define-ownership class="target" owner="target"/>
             </modify-argument>
         </modify-function>
-        <modify-function signature="renderInternal(bool,std::list&lt;Effect*&gt;,std::list&lt;int&gt;,std::list&lt;int&gt;,std::list&lt;int&gt;)" remove="all"/>
-        <modify-function signature="renderInternal(bool,Effect*,int,int,int)" remove="all"/>
-        <modify-function signature="render(std::list&lt;Effect*&gt;,std::list&lt;int&gt;,std::list&lt;int&gt;,std::list&lt;int&gt;)">
+        <modify-function signature="renderInternal(bool,std::list&lt;Natron::Python::Effect*&gt;,std::list&lt;int&gt;,std::list&lt;int&gt;,std::list&lt;int&gt;)" remove="all"/>
+        <modify-function signature="renderInternal(bool,Natron::Python::Effect*,int,int,int)" remove="all"/>
+        <modify-function signature="render(std::list&lt;Natron::Python::Effect*&gt;,std::list&lt;int&gt;,std::list&lt;int&gt;,std::list&lt;int&gt;)">
             <modify-argument index="1">
                 <replace-type modified-type="PyList"/>
             </modify-argument>
@@ -864,7 +869,7 @@
                     PyErr_SetString(PyExc_TypeError, "tasks must be a list of tuple objects.");
                     return 0;
                 }
-                std::list&lt;Effect*&gt; effects;
+                std::list&lt;Natron::Python::Effect*&gt; effects;
                 
                 std::list&lt;int&gt; firstFrames;
                 
@@ -885,7 +890,7 @@
                         PyErr_SetString(PyExc_TypeError, "the tuple must have 3 or 4 items.");
                         return 0;
                     }
-                    Effect* writeNode = %CONVERTTOCPP[Effect*](PyTuple_GET_ITEM(tuple, 0));
+                    Natron::Python::Effect* writeNode = %CONVERTTOCPP[Natron::Python::Effect*](PyTuple_GET_ITEM(tuple, 0));
                     int firstFrame = %CONVERTTOCPP[int](PyTuple_GET_ITEM(tuple, 1));
                     int lastFrame = %CONVERTTOCPP[int](PyTuple_GET_ITEM(tuple, 2));
                     int frameStep;
@@ -1051,11 +1056,11 @@
         </modify-function>
         <modify-function signature="getParams()const">
             <inject-code class="target" position="beginning">
-                std::list&lt;Param*&gt; params = %CPPSELF.%FUNCTION_NAME(%ARGUMENT_NAMES);
+                std::list&lt;Natron::Python::Param*&gt; params = %CPPSELF.%FUNCTION_NAME(%ARGUMENT_NAMES);
                 PyObject* ret = PyList_New((int) params.size());
                 int idx = 0;
-                for (std::list&lt;Param*&gt;::iterator it = params.begin(); it!=params.end(); ++it,++idx) {
-                    PyObject* item = %CONVERTTOPYTHON[Param*](*it);
+                for (std::list&lt;Natron::Python::Param*&gt;::iterator it = params.begin(); it!=params.end(); ++it,++idx) {
+                    PyObject* item = %CONVERTTOPYTHON[Natron::Python::Param*](*it);
                     // Ownership transferences.
                     Shiboken::Object::getOwnership(item);
                     PyList_SET_ITEM(ret, idx, item);
@@ -1155,7 +1160,7 @@
             </modify-argument>
         </modify-function>
 
-        <modify-function signature="connectInput(int,const Effect*)">
+        <modify-function signature="connectInput(int,const Natron::Python::Effect*)">
             <inject-code class="target" position="beginning">
                 %RETURN_TYPE %0 = %CPPSELF.%FUNCTION_NAME(%1,%2);
                 %PYARG_0 = %CONVERTTOPYTHON[%RETURN_TYPE](%0);
@@ -1187,11 +1192,11 @@
         </modify-function>
         <modify-function signature="getParams()const">
             <inject-code class="target" position="beginning">
-                std::list&lt;Param*&gt; params = %CPPSELF.%FUNCTION_NAME(%ARGUMENT_NAMES);
+                std::list&lt;Natron::Python::Param*&gt; params = %CPPSELF.%FUNCTION_NAME(%ARGUMENT_NAMES);
                 PyObject* ret = PyList_New((int) params.size());
                 int idx = 0;
-                for (std::list&lt;Param*&gt;::iterator it = params.begin(); it!=params.end(); ++it,++idx) {
-                PyObject* item = %CONVERTTOPYTHON[Param*](*it);
+                for (std::list&lt;Natron::Python::Param*&gt;::iterator it = params.begin(); it!=params.end(); ++it,++idx) {
+                PyObject* item = %CONVERTTOPYTHON[Natron::Python::Param*](*it);
                 // Ownership transferences.
                 Shiboken::Object::getOwnership(item);
                 PyList_SET_ITEM(ret, idx, item);
@@ -1506,14 +1511,7 @@
 
                     for (int j = 0; j &lt; subSize; ++j) {
                         PyObject* pyString = PyList_GET_ITEM(subList,j);
-                        if ( PyString_Check(pyString) ) {
-                            char* buf = PyString_AsString(pyString);
-                            if (buf) {
-                                std::string ret;
-                                ret.append(buf);
-                                rowVec[j] = ret;
-                                }
-                        } else if (PyUnicode_Check(pyString) ) {
+                        if (PyUnicode_Check(pyString) ) {
                             PyObject* utf8pyobj = PyUnicode_AsUTF8String(pyString); // newRef
                             if (utf8pyobj) {
                                 char* cstr = PyBytes_AS_STRING(utf8pyobj); // Borrowed pointer
@@ -1554,7 +1552,7 @@
                 double key,value,left,right;
                 %RETURN_TYPE %0 = %CPPSELF.%FUNCTION_NAME(%1, %2,&amp;key,&amp;value, &amp;left, &amp;right);
                 %PYARG_0 = PyTuple_New(5);
-                PyTuple_SET_ITEM(%PYARG_0, 0, %CONVERTTOPYTHON[NATRON_NAMESPACE::StatusEnum](%0));
+                PyTuple_SET_ITEM(%PYARG_0, 0, %CONVERTTOPYTHON[Natron::StatusEnum](%0));
                 PyTuple_SET_ITEM(%PYARG_0, 1, %CONVERTTOPYTHON[double](key));
                 PyTuple_SET_ITEM(%PYARG_0, 2, %CONVERTTOPYTHON[double](value));
                 PyTuple_SET_ITEM(%PYARG_0, 3, %CONVERTTOPYTHON[double](left));
@@ -1562,7 +1560,7 @@
                 return %PYARG_0;
             </inject-code>
         </modify-function>
-        <modify-function signature="getCurveColor(int,ColorTuple&amp;)const">
+        <modify-function signature="getCurveColor(int,Natron::Python::ColorTuple&amp;)const">
             <modify-argument index="2">
                 <remove-argument/>
             </modify-argument>
@@ -1570,9 +1568,9 @@
                 <replace-type modified-type="ColorTuple"/>
             </modify-argument>
             <inject-code class="target" position="beginning">
-                ColorTuple t;
+                Natron::Python::ColorTuple t;
                 %CPPSELF.%FUNCTION_NAME(%1,t);
-                %PYARG_0 = %CONVERTTOPYTHON[ColorTuple](t);
+                %PYARG_0 = %CONVERTTOPYTHON[Natron::Python::ColorTuple](t);
                 return %PYARG_0;
             </inject-code>
         </modify-function>
@@ -1609,11 +1607,11 @@
     <object-type name="Layer">
         <modify-function signature="getChildren()const">
             <inject-code class="target" position="beginning">
-                std::list&lt;ItemBase*&gt; items = %CPPSELF.%FUNCTION_NAME(%ARGUMENT_NAMES);
+                std::list&lt;Natron::Python::ItemBase*&gt; items = %CPPSELF.%FUNCTION_NAME(%ARGUMENT_NAMES);
                 PyObject* ret = PyList_New((int) items.size());
                 int idx = 0;
-                for (std::list&lt;ItemBase*&gt;::iterator it = items.begin(); it!=items.end(); ++it,++idx) {
-                PyObject* item = %CONVERTTOPYTHON[ItemBase*](*it);
+                for (std::list&lt;Natron::Python::ItemBase*&gt;::iterator it = items.begin(); it!=items.end(); ++it,++idx) {
+                PyObject* item = %CONVERTTOPYTHON[Natron::Python::ItemBase*](*it);
                 // Ownership transferences.
                 Shiboken::Object::getOwnership(item);
                 PyList_SET_ITEM(ret, idx, item);
@@ -1621,17 +1619,17 @@
                 return ret;
             </inject-code>
         </modify-function>
-        <modify-function signature="addItem(ItemBase*)">
+        <modify-function signature="addItem(Natron::Python::ItemBase*)">
             <inject-code class="target" position="beginning">
                 %CPPSELF.%FUNCTION_NAME(%1);
             </inject-code>
         </modify-function>
-        <modify-function signature="insertItem(int,ItemBase*)">
+        <modify-function signature="insertItem(int,Natron::Python::ItemBase*)">
             <inject-code class="target" position="beginning">
                 %CPPSELF.%FUNCTION_NAME(%1,%2);
             </inject-code>
         </modify-function>
-        <modify-function signature="removeItem(ItemBase*)">
+        <modify-function signature="removeItem(Natron::Python::ItemBase*)">
             <inject-code class="target" position="beginning">
                 %CPPSELF.%FUNCTION_NAME(%1);
             </inject-code>
@@ -1768,11 +1766,11 @@
         </modify-function>
         <modify-function signature="getParams()const">
             <inject-code class="target" position="beginning">
-                std::list&lt;Param*&gt; params = %CPPSELF.%FUNCTION_NAME(%ARGUMENT_NAMES);
+                std::list&lt;Natron::Python::Param*&gt; params = %CPPSELF.%FUNCTION_NAME(%ARGUMENT_NAMES);
                 PyObject* ret = PyList_New((int) params.size());
                 int idx = 0;
-                for (std::list&lt;Param*&gt;::iterator it = params.begin(); it!=params.end(); ++it,++idx) {
-                PyObject* item = %CONVERTTOPYTHON[Param*](*it);
+                for (std::list&lt;Natron::Python::Param*&gt;::iterator it = params.begin(); it!=params.end(); ++it,++idx) {
+                PyObject* item = %CONVERTTOPYTHON[Natron::Python::Param*](*it);
                 // Ownership transferences.
                 Shiboken::Object::getOwnership(item);
                 PyList_SET_ITEM(ret, idx, item);
@@ -1793,7 +1791,7 @@
                 <define-ownership class="target" owner="target"/>
             </modify-argument>
         </modify-function>
-        <modify-function signature="getAllTracks(std::list&lt;Track*&gt;*)const">
+        <modify-function signature="getAllTracks(std::list&lt;Natron::Python::Track*&gt;*)const">
             <modify-argument index="1">
                 <remove-argument/>
             </modify-argument>
@@ -1801,12 +1799,12 @@
                 <replace-type modified-type="PyList"/>
             </modify-argument>
             <inject-code class="target" position="beginning">
-                std::list&lt;Track*&gt; tracks;
+                std::list&lt;Natron::Python::Track*&gt; tracks;
                 %CPPSELF.%FUNCTION_NAME(&amp;tracks);
                 PyObject* ret = PyList_New((int) tracks.size());
                 int idx = 0;
-                for (std::list&lt;Track*&gt;::iterator it = tracks.begin(); it!=tracks.end(); ++it,++idx) {
-                PyObject* item = %CONVERTTOPYTHON[Track*](*it);
+                for (std::list&lt;Natron::Python::Track*&gt;::iterator it = tracks.begin(); it!=tracks.end(); ++it,++idx) {
+                PyObject* item = %CONVERTTOPYTHON[Natron::Python::Track*](*it);
                 // Ownership transferences.
                 Shiboken::Object::getOwnership(item);
                 PyList_SET_ITEM(ret, idx, item);
@@ -1815,7 +1813,7 @@
             </inject-code>
             
         </modify-function>
-        <modify-function signature="getSelectedTracks(std::list&lt;Track*&gt;*)const">
+        <modify-function signature="getSelectedTracks(std::list&lt;Natron::Python::Track*&gt;*)const">
             <modify-argument index="1">
                 <remove-argument/>
             </modify-argument>
@@ -1823,12 +1821,12 @@
                 <replace-type modified-type="PyList"/>
             </modify-argument>
             <inject-code class="target" position="beginning">
-                std::list&lt;Track*&gt; tracks;
+                std::list&lt;Natron::Python::Track*&gt; tracks;
                 %CPPSELF.%FUNCTION_NAME(&amp;tracks);
                 PyObject* ret = PyList_New((int) tracks.size());
                 int idx = 0;
-                for (std::list&lt;Track*&gt;::iterator it = tracks.begin(); it!=tracks.end(); ++it,++idx) {
-                PyObject* item = %CONVERTTOPYTHON[Track*](*it);
+                for (std::list&lt;Natron::Python::Track*&gt;::iterator it = tracks.begin(); it!=tracks.end(); ++it,++idx) {
+                PyObject* item = %CONVERTTOPYTHON[Natron::Python::Track*](*it);
                 // Ownership transferences.
                 Shiboken::Object::getOwnership(item);
                 PyList_SET_ITEM(ret, idx, item);
@@ -1889,7 +1887,16 @@
     <rejection class="App" field-name="_instance"/>
     <rejection class="Effect" field-name="_node"/>
     <rejection class="*" field-name="_imp"/>
-    
+    <rejection class="*" function-name="PyStringToStdString"/>
+    <rejection class="*" function-name="getAttrRecursive"/>
+    <rejection class="*" function-name="getGroupInfos"/>
+    <rejection class="*" function-name="getFunctionArguments"/>
+    <rejection class="*" function-name="getMainModule"/>
+    <rejection class="*" function-name="interpretPythonScript"/>
+
+    </namespace-type>
+    </namespace-type>
+
     <object-type name="PyCoreApplication">
         <modify-function signature="getActiveInstance()const">
             <modify-argument index="return">
@@ -1907,7 +1914,6 @@
             </modify-argument>
         </modify-function>
     </object-type>
-
 
 </typesystem>
 

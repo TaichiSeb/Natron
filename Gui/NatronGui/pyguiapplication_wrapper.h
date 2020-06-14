@@ -1,19 +1,18 @@
 #ifndef SBK_PYGUIAPPLICATIONWRAPPER_H
 #define SBK_PYGUIAPPLICATIONWRAPPER_H
 
-#include <shiboken.h>
-
 #include <PyGlobalGui.h>
 
-NATRON_NAMESPACE_ENTER NATRON_PYTHON_NAMESPACE_ENTER
 class PyGuiApplicationWrapper : public PyGuiApplication
 {
 public:
     PyGuiApplicationWrapper();
-    virtual ~PyGuiApplicationWrapper();
+    ~PyGuiApplicationWrapper();
     static void pysideInitQtMetaTypes();
+    void resetPyMethodCache();
+private:
+    mutable bool m_PyMethodCache[1];
 };
-NATRON_PYTHON_NAMESPACE_EXIT NATRON_NAMESPACE_EXIT
 
 #endif // SBK_PYGUIAPPLICATIONWRAPPER_H
 

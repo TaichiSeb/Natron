@@ -26,6 +26,9 @@
 #include <Python.h>
 // ***** END PYTHON BLOCK *****
 
+//Defined to avoid including some headers when running shiboken which may crash shiboken (particularly boost headers)
+#define SBK_RUN
+
 #include "Global/Macros.h"
 
 /**
@@ -33,11 +36,9 @@
  * Do not include it when compiling Natron.
  **/
 
-//Defined to avoid including some headers when running shiboken which may crash shiboken (particularly boost headers)
-#define SBK_RUN
-
-#include <pyside_global.h>
+#include <pyside2_global.h>
 #include <string>
+
 //Global
 #include <GlobalDefines.h>
 #include <Enums.h>
