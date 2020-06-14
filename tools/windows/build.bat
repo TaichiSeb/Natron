@@ -461,7 +461,7 @@ rem E:\projets\natron\Natron>shiboken2  --avoid-protected-hack --enable-pyside-e
 
 cd %ROOT%
 qmake -r -tp vc -spec win32-msvc CONFIG+=64bit CONFIG+=release Project.pro -o Project64.sln
-msBuild Project64.sln /m /p:useenv=true;Configuration=Release;Platform=x64 /t:Natron
+msBuild Project64.sln /m /p:useenv=true;Configuration=Release;Platform=x64 /t:Natron;natron-python;natronrenderer
 
 cd %ROOT%\Tests
 msBuild Tests.vcxproj /m /p:useenv=true;Configuration=Release;Platform=x64
