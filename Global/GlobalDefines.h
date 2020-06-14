@@ -49,6 +49,10 @@
 
 #if !defined(Q_MOC_RUN) && !defined(SBK_RUN)
 #include <boost/cstdint.hpp>
+typedef boost::uint32_t U32;
+typedef boost::uint64_t U64;
+typedef boost::uint8_t U8;
+typedef boost::uint16_t U16;
 #endif
 #include <QtCore/QtGlobal>
 #if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
@@ -66,10 +70,6 @@ CLANG_DIAG_ON(deprecated)
 //#define foreach Q_FOREACH
 
 
-typedef boost::uint32_t U32;
-typedef boost::uint64_t U64;
-typedef boost::uint8_t U8;
-typedef boost::uint16_t U16;
 
 
 NATRON_NAMESPACE_ENTER

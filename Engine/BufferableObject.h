@@ -30,6 +30,7 @@
 
 #include <cstddef>
 #include <list>
+#include <memory>
 
 NATRON_NAMESPACE_ENTER
 
@@ -38,7 +39,7 @@ NATRON_NAMESPACE_ENTER
  **/
 class BufferableObject
 {
-    int uniqueID; //< used to differentiate frames which may belong to the same time/view (e.g when wipe is enabled)
+    int uniqueID = 0; //< used to differentiate frames which may belong to the same time/view (e.g when wipe is enabled)
 
 public:
 
@@ -47,10 +48,9 @@ public:
         return uniqueID;
     }
 
-    BufferableObject()
-        : uniqueID(0) {}
+    BufferableObject() = default;
 
-    virtual ~BufferableObject() {}
+    virtual ~BufferableObject() = default;
 
     void setUniqueID(int aid)
     {
@@ -60,7 +60,7 @@ public:
     virtual std::size_t sizeInRAM() const = 0;
 };
 
-typedef boost::shared_ptr<BufferableObject> BufferableObjectPtr;
+typedef std::shared_ptr<BufferableObject> BufferableObjectPtr;
 
 typedef std::list<BufferableObjectPtr> BufferableObjectPtrList;
 

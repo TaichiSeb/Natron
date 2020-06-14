@@ -26,7 +26,6 @@
 #include "ProgressTaskInfo.h"
 
 #if !defined(Q_MOC_RUN) && !defined(SBK_RUN)
-#include <boost/scoped_ptr.hpp>
 #include <boost/algorithm/clamp.hpp>
 #endif
 
@@ -114,8 +113,8 @@ public:
     bool canCancel;
     bool updatedProgressOnce;
     int firstFrame, lastFrame, frameStep, lastRenderedFrame, nFramesRendered;
-    boost::scoped_ptr<TimeLapse> timer;
-    boost::scoped_ptr<QTimer> refreshLabelTimer;
+    std::unique_ptr<TimeLapse> timer;
+    std::unique_ptr<QTimer> refreshLabelTimer;
     QString message;
     ProcessHandlerPtr process;
 

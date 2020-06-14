@@ -40,15 +40,12 @@ CLANG_DIAG_OFF(deprecated)
 #include <QtCore/QCoreApplication>
 CLANG_DIAG_ON(deprecated)
 
-#if !defined(Q_MOC_RUN) && !defined(SBK_RUN)
-#include <boost/scoped_ptr.hpp>
-#endif
 #include "Engine/EngineFwd.h"
 
 NATRON_NAMESPACE_ENTER
 
 struct CLArgsPrivate;
-class CLArgs //: boost::noncopyable // GCC 4.2 requires the copy constructor
+class CLArgs
 {
     Q_DECLARE_TR_FUNCTIONS(CLArgs)
 
@@ -85,7 +82,7 @@ public:
     CLArgs(const QStringList& arguments,
            bool forceBackground);
 
-    CLArgs(const CLArgs& other); // GCC 4.2 requires the copy constructor
+    CLArgs(const CLArgs& other);
 
     ~CLArgs();
 
@@ -151,7 +148,7 @@ public:
 
 private:
 
-    boost::scoped_ptr<CLArgsPrivate> _imp;
+    std::unique_ptr<CLArgsPrivate> _imp;
 };
 
 NATRON_NAMESPACE_EXIT

@@ -44,10 +44,8 @@ CLANG_DIAG_ON(deprecated)
 #include <QtCore/QProcess>
 #include <QtCore/QMap>
 
-#if !defined(Q_MOC_RUN) && !defined(SBK_RUN)
-#include <boost/scoped_ptr.hpp>
-#include <boost/shared_ptr.hpp>
-#include <boost/noncopyable.hpp>
+#if defined(Q_MOC_RUN) || defined(SBK_RUN)
+typedef unsigned long long U64;
 #endif
 
 #include "Engine/AfterQuitProcessingI.h"
@@ -94,7 +92,7 @@ typedef std::vector<AppInstancePtr> AppInstanceVec;
 
 struct AppManagerPrivate;
 class AppManager
-    : public QObject, public AfterQuitProcessingI, public boost::noncopyable
+    : public QObject, public AfterQuitProcessingI
 {
 GCC_DIAG_SUGGEST_OVERRIDE_OFF
     Q_OBJECT
@@ -119,6 +117,8 @@ public:
 
 
     AppManager();
+    AppManager(const AppManager&) = delete;
+    AppManager& operator=(const AppManager&) = delete;
 
     /**
      * @brief This function initializes the QCoreApplication (or QApplication) object and the AppManager object (load plugins etc...)
@@ -250,7 +250,7 @@ public:
 
     template <class K>
     static
-    boost::shared_ptr<K> createKnob(KnobHolder*  holder,
+    std::shared_ptr<K> createKnob(KnobHolder*  holder,
                                     const std::string &label,
                                     int dimension = 1,
                                     bool declaredByPlugin = true)
@@ -260,7 +260,7 @@ public:
 
     template <class K>
     static
-    boost::shared_ptr<K> createKnob(KnobHolder*  holder,
+    std::shared_ptr<K> createKnob(KnobHolder*  holder,
                                     const QString &label,
                                     int dimension = 1,
                                     bool declaredByPlugin = true)
@@ -701,7 +701,7 @@ private:
     void tearDownPython();
 
     static AppManager *_instance;
-    boost::scoped_ptr<AppManagerPrivate> _imp;
+    std::unique_ptr<AppManagerPrivate> _imp;
 };
 
 // AppManager

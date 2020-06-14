@@ -42,8 +42,10 @@ CLANG_DIAG_ON(uninitialized)
 #include "Gui/GuiApplicationManager.h"
 #include "Gui/GuiFwd.h"
 
-NATRON_NAMESPACE_ENTER;
-NATRON_PYTHON_NAMESPACE_ENTER;
+NATRON_NAMESPACE_USING;
+NATRON_PYTHON_NAMESPACE_USING;
+//NATRON_NAMESPACE_ENTER;
+//NATRON_PYTHON_NAMESPACE_ENTER;
 
 class PyGuiApplication
     : public PyCoreApplication
@@ -75,7 +77,7 @@ public:
         if (!app) {
             return 0;
         }
-        GuiAppInstancePtr guiApp = boost::dynamic_pointer_cast<GuiAppInstance>(app);
+        GuiAppInstancePtr guiApp = std::dynamic_pointer_cast<GuiAppInstance>(app);
         if (!guiApp) {
             return 0;
         }
@@ -122,7 +124,7 @@ public:
     }
 };
 
-NATRON_PYTHON_NAMESPACE_EXIT;
-NATRON_NAMESPACE_EXIT;
+//NATRON_PYTHON_NAMESPACE_EXIT;
+//NATRON_NAMESPACE_EXIT;
 
 #endif // GLOBAL_GUI_WRAPPER_H

@@ -36,7 +36,7 @@ win32 {
 	CONFIG += app
 }
 CONFIG += moc
-CONFIG += boost boost-serialization-lib opengl qt cairo python shiboken pyside 
+CONFIG += boost boost-serialization-lib opengl qt cairo python shiboken pyside 3rdparties
 CONFIG += static-gui static-engine static-host-support static-breakpadclient static-libmv static-openmvg static-ceres static-qhttpserver static-libtess
 
 QT += gui core opengl network
@@ -64,7 +64,7 @@ win32-msvc* {
 	} else {
 		QMAKE_LFLAGS += /MACHINE:X86
 	}
-        QMAKE_LFLAGS += /ENTRY:"mainCRTStartup"
+        QMAKE_LFLAGS += /ENTRY:"wmainCRTStartup"
 }
 
 

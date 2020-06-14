@@ -28,8 +28,7 @@
 #include <cassert>
 #include <algorithm> // min, max
 #include <stdexcept>
-
-#include <boost/scoped_array.hpp>
+#include <memory>
 
 CLANG_DIAG_OFF(deprecated)
 CLANG_DIAG_OFF(uninitialized)
@@ -1255,7 +1254,7 @@ NodeGui::refreshEdges()
             if (!nodeInputGui_i) {
                 continue;
             }
-            NodeGuiPtr node = boost::dynamic_pointer_cast<NodeGui>(nodeInputGui_i);
+            NodeGuiPtr node = std::dynamic_pointer_cast<NodeGui>(nodeInputGui_i);
             if (_inputEdges[i]->getSource() != node) {
                 _inputEdges[i]->setSource(node);
             } else {
@@ -1491,7 +1490,7 @@ NodeGui::initializeInputs()
         if (input) {
             NodeGuiIPtr gui_i = input->getNodeGui();
             assert(gui_i);
-            NodeGuiPtr gui = boost::dynamic_pointer_cast<NodeGui>(gui_i);
+            NodeGuiPtr gui = std::dynamic_pointer_cast<NodeGui>(gui_i);
             assert(gui);
             edge->setSource(gui);
         }
@@ -1794,7 +1793,7 @@ NodeGui::connectEdge(int edgeNumber)
     NodePtr input = inputs[edgeNumber].lock();
     if (input) {
         NodeGuiIPtr ngi = input->getNodeGui();
-        src = boost::dynamic_pointer_cast<NodeGui>(ngi);
+        src = std::dynamic_pointer_cast<NodeGui>(ngi);
     }
 
     _inputEdges[edgeNumber]->setSource(src);
@@ -2414,7 +2413,7 @@ NodeGui::onAllKnobsSlaved(bool b)
         assert(masterNode);
         NodeGuiIPtr masterNodeGui_i = masterNode->getNodeGui();
         assert(masterNodeGui_i);
-        NodeGuiPtr masterNodeGui = boost::dynamic_pointer_cast<NodeGui>(masterNodeGui_i);
+        NodeGuiPtr masterNodeGui = std::dynamic_pointer_cast<NodeGui>(masterNodeGui_i);
         _masterNodeGui = masterNodeGui;
         assert(!_slaveMasterLink);
 
@@ -2578,7 +2577,7 @@ NodeGui::onKnobsLinksChanged()
             ///There's no link to the master node yet
             if ( masterNode && (masterNode->getNodeGui().get() != this) && ( masterNode->getGroup() == node->getGroup() ) ) {
                 NodeGuiIPtr master_i = masterNode->getNodeGui();
-                NodeGuiPtr master = boost::dynamic_pointer_cast<NodeGui>(master_i);
+                NodeGuiPtr master = std::dynamic_pointer_cast<NodeGui>(master_i);
                 assert(master);
 
                 LinkArrow* arrow = new LinkArrow( master, thisShared, parentItem() );
@@ -4043,7 +4042,7 @@ GroupKnobDialog::GroupKnobDialog(Gui* gui,
     refreshUserParamsGUI();
 }
 
-typedef boost::shared_ptr<GroupKnobDialog> GroupKnobDialogPtr;
+typedef std::shared_ptr<GroupKnobDialog> GroupKnobDialogPtr;
 
 void
 NodeGui::showGroupKnobAsDialog(KnobGroup* group)

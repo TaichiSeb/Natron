@@ -34,6 +34,7 @@
 #include <cstring> // for std::memcpy
 #include <stdexcept>
 #include <vector>
+#include <memory>
 #ifndef _WIN32
 #include <fstream>
 #endif
@@ -43,12 +44,6 @@
 
 #ifdef __NATRON_WIN32__
 #include <windows.h>
-#endif
-
-#if !defined(Q_MOC_RUN) && !defined(SBK_RUN)
-#include <boost/utility.hpp>
-#include <boost/shared_ptr.hpp>
-#include <boost/scoped_ptr.hpp>
 #endif
 
 #include <QtCore/QFile>
@@ -313,19 +308,15 @@ public:
     }
 };
 
-class AbstractCacheEntryBase : boost::noncopyable
+class AbstractCacheEntryBase
 {
 public:
 
-    AbstractCacheEntryBase()
-    {
+    AbstractCacheEntryBase() = default;
+    virtual ~AbstractCacheEntryBase() = default;
 
-    }
-
-    virtual ~AbstractCacheEntryBase()
-    {
-
-    }
+    AbstractCacheEntryBase(const AbstractCacheEntryBase&) = delete;
+    AbstractCacheEntryBase& operator=(const AbstractCacheEntryBase&) = delete;
 
     virtual TileCacheFilePtr allocTile(std::size_t *dataOffset) = 0;
     virtual void freeTile(const TileCacheFilePtr& file, std::size_t dataOffset) = 0;
@@ -722,11 +713,11 @@ public:
 private:
 
     std::string _path;
-    boost::scoped_ptr<RamBuffer<DataType> > _buffer;
+    std::unique_ptr<RamBuffer<DataType> > _buffer;
 
     /*mutable so the reOpenFileMapping function can reopen the mapped file. It doesn't
        change the underlying data*/
-    mutable boost::scoped_ptr<MemoryFile> _backingFile;
+    mutable std::unique_ptr<MemoryFile> _backingFile;
 
     // Set if the cache is a tile cache
     AbstractCacheEntryBase* _entry;
@@ -734,7 +725,7 @@ private:
     std::size_t _cacheFileDataOffset;
 
     // Used when we store images as OpenGL textures
-    boost::scoped_ptr<Texture> _glTexture;
+    std::unique_ptr<Texture> _glTexture;
     StorageModeEnum _storageMode;
 };
 
@@ -758,7 +749,7 @@ public:
     typedef DataType data_t;
     typedef KeyType key_t;
     typedef ParamsType param_t;
-    typedef boost::shared_ptr<ParamsType> ParamsTypePtr;
+    typedef std::shared_ptr<ParamsType> ParamsTypePtr;
 
     /**
      * @brief Ctor

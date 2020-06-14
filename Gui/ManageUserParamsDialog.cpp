@@ -26,10 +26,7 @@
 #include "ManageUserParamsDialog.h"
 
 #include <stdexcept>
-
-#if !defined(Q_MOC_RUN) && !defined(SBK_RUN)
-#include <boost/shared_ptr.hpp>
-#endif
+#include <memory>
 
 #include <QHBoxLayout>
 #include <QVBoxLayout>
@@ -618,7 +615,7 @@ ManageUserParamsDialog::onUpClicked()
             QItemSelectionModel* model = _imp->tree->selectionModel();
             model->select(_imp->tree->indexFromItemPublic(item), QItemSelectionModel::ClearAndSelect);
 
-            KnobPagePtr isPage = boost::dynamic_pointer_cast<KnobPage>(knob);
+            KnobPagePtr isPage = std::dynamic_pointer_cast<KnobPage>(knob);
             if (isPage) {
                 _imp->panel->setPageActiveIndex(isPage);
             }
@@ -688,7 +685,7 @@ ManageUserParamsDialog::onDownClicked()
             QItemSelectionModel* model = _imp->tree->selectionModel();
             model->select(_imp->tree->indexFromItemPublic(item), QItemSelectionModel::ClearAndSelect);
 
-            KnobPagePtr isPage = boost::dynamic_pointer_cast<KnobPage>(knob);
+            KnobPagePtr isPage = std::dynamic_pointer_cast<KnobPage>(knob);
             if (isPage) {
                 _imp->panel->setPageActiveIndex(isPage);
             }

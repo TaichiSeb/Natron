@@ -28,10 +28,7 @@
 
 #include "Global/Macros.h"
 
-#if !defined(Q_MOC_RUN) && !defined(SBK_RUN)
-#include <boost/shared_ptr.hpp>
-#include <boost/scoped_ptr.hpp>
-#endif
+#include <memory>
 
 #include <map>
 #include <vector>
@@ -328,7 +325,7 @@ private:
     };
 
     ///For each knob, the second member points to a clone of the knob before the first redo() call was made
-    typedef std::map < KnobGuiWPtr, std::list<ValueToSet> >  ParamsMap;
+    typedef std::map < KnobGuiWPtr, std::list<ValueToSet>, std::owner_less<KnobGuiWPtr>  >  ParamsMap;
     ParamsMap knobs;
     bool createNew;
     bool firstRedoCalled;
@@ -365,7 +362,7 @@ class PasteUndoCommand
     Q_DECLARE_TR_FUNCTIONS(PasteUndoCommand)
 
 private:
-    boost::scoped_ptr<PasteUndoCommandPrivate> _imp;
+    std::unique_ptr<PasteUndoCommandPrivate> _imp;
 
 public:
 

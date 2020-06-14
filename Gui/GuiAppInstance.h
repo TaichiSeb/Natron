@@ -30,11 +30,6 @@
 
 #include <map>
 
-#if !defined(Q_MOC_RUN) && !defined(SBK_RUN)
-#include <boost/shared_ptr.hpp>
-#include <boost/scoped_ptr.hpp>
-#endif
-
 #include "Engine/AppInstance.h"
 #include "Engine/ViewIdx.h"
 
@@ -136,8 +131,10 @@ public:
                                               StandardButtons buttons,
                                               StandardButtonEnum defaultButton,
                                               bool* stopAsking) OVERRIDE FINAL WARN_UNUSED_RETURN;
+#if !defined(Q_MOC_RUN) && !defined(SBK_RUN)
     virtual void loadProjectGui(bool isAutosave,  boost::archive::xml_iarchive & archive) const OVERRIDE FINAL;
     virtual void saveProjectGui(boost::archive::xml_oarchive & archive) OVERRIDE FINAL;
+#endif
     virtual void notifyRenderStarted(const QString & sequenceName,
                                      int firstFrame, int lastFrame,
                                      int frameStep, bool canPause,
@@ -277,7 +274,7 @@ private:
     virtual void createNodeGui(const NodePtr &node,
                                const NodePtr&  parentMultiInstance,
                                const CreateNodeArgs& args) OVERRIDE FINAL;
-    boost::scoped_ptr<GuiAppInstancePrivate> _imp;
+    std::unique_ptr<GuiAppInstancePrivate> _imp;
 };
 
 NATRON_NAMESPACE_EXIT

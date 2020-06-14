@@ -59,7 +59,7 @@ NATRON_NAMESPACE_ENTER
  **/
 
 template <typename KNOBTYPE>
-boost::shared_ptr<KNOBTYPE>
+std::shared_ptr<KNOBTYPE>
 createDuplicateKnob( const std::string& knobName,
                      const NodePtr& internalNode,
                      const EffectInstancePtr& effect,
@@ -70,7 +70,7 @@ createDuplicateKnob( const std::string& knobName,
     KnobIPtr internalNodeKnob = internalNode->getKnobByName(knobName);
 
     if (!internalNodeKnob) {
-        return boost::shared_ptr<KNOBTYPE>();
+        return std::shared_ptr<KNOBTYPE>();
     }
     assert(internalNodeKnob);
     KnobIPtr duplicateKnob = internalNodeKnob->createDuplicateOnHolder(effect.get(), page, group, -1, true, internalNodeKnob->getName(), internalNodeKnob->getLabel(), internalNodeKnob->getHintToolTip(), false, false);
@@ -83,7 +83,7 @@ createDuplicateKnob( const std::string& knobName,
         }
     }
 
-    return boost::dynamic_pointer_cast<KNOBTYPE>(duplicateKnob);
+    return std::dynamic_pointer_cast<KNOBTYPE>(duplicateKnob);
 }
 
 TrackerContextPrivate::TrackerContextPrivate(TrackerContext* publicInterface,
@@ -116,7 +116,7 @@ TrackerContextPrivate::TrackerContextPrivate(TrackerContext* publicInterface,
     QObject::connect( &scheduler, SIGNAL(trackingStarted(int)), _publicInterface, SLOT(onSchedulerTrackingStarted(int)) );
     QObject::connect( &scheduler, SIGNAL(trackingFinished()), _publicInterface, SLOT(onSchedulerTrackingFinished()) );
     QObject::connect( &scheduler, SIGNAL(trackingProgress(double)), _publicInterface, SLOT(onSchedulerTrackingProgress(double)) );
-    TrackerNodePtr isTrackerNode = boost::dynamic_pointer_cast<TrackerNode>(effect);
+    TrackerNodePtr isTrackerNode = std::dynamic_pointer_cast<TrackerNode>(effect);
     QString fixedNamePrefix = QString::fromUtf8( node->getScriptName_mt_safe().c_str() );
 
     fixedNamePrefix.append( QLatin1Char('_') );
@@ -1195,7 +1195,7 @@ TrackerContext::trackMarkers(const std::list<TrackMarkerPtr>& markers,
             (*it)->setEnabledAtTime(start, true);
         }
         
-        TrackMarkerAndOptionsPtr t = boost::make_shared<TrackMarkerAndOptions>();
+        TrackMarkerAndOptionsPtr t = std::make_shared<TrackMarkerAndOptions>();
         t->natronMarker = *it;
 
         // Set a keyframe on the marker to initialize its position

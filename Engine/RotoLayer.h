@@ -32,10 +32,7 @@
 #include <set>
 #include <string>
 
-#if !defined(Q_MOC_RUN) && !defined(SBK_RUN)
-#include <boost/scoped_ptr.hpp>
-#include <boost/shared_ptr.hpp>
-#endif
+#include <memory>
 
 CLANG_DIAG_OFF(deprecated-declarations)
 #include <QtCore/QObject>
@@ -114,7 +111,7 @@ public:
 
 private:
 
-    boost::scoped_ptr<RotoLayerPrivate> _imp;
+    std::unique_ptr<RotoLayerPrivate> _imp;
 };
 
 NATRON_NAMESPACE_EXIT

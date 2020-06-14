@@ -293,7 +293,9 @@ Gui::loadStyleSheet()
                              .arg( qcolor_to_qstring(altCol) ) // %10 = altered text color
                              .arg( qcolor_to_qstring(lightSelCol) ) ); // %11 = mouse over selection color
     } else {
-        Dialogs::errorDialog( tr("Stylesheet").toStdString(), tr("Failure to load stylesheet file ").toStdString() + qss.fileName().toStdString() );
+        QFileInfo qss_info(qss);
+        Dialogs::errorDialog( tr("Stylesheet").toStdString(), tr("Failure to load stylesheet file ").toStdString() + qss_info.absoluteFilePath().toStdString() + QDir::rootPath().toStdString());
+        
     }
 } // Gui::loadStyleSheet
 
@@ -564,7 +566,7 @@ Gui::removeViewerTab(ViewerTab* tab,
         ///call the deleteNode which will call this function again when the node will be deactivated.
         NodePtr internalNode = tab->getInternalNode()->getNode();
         NodeGuiIPtr guiI = internalNode->getNodeGui();
-        NodeGuiPtr gui = boost::dynamic_pointer_cast<NodeGui>(guiI);
+        NodeGuiPtr gui = std::dynamic_pointer_cast<NodeGui>(guiI);
         assert(gui);
         NodeGraphI* graph_i = internalNode->getGroup()->getNodeGraph();
         assert(graph_i);

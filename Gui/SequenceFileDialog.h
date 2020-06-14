@@ -34,11 +34,7 @@
 #include <utility>
 #include <set>
 #include <list>
-
-#if !defined(Q_MOC_RUN) && !defined(SBK_RUN)
-#include <boost/shared_ptr.hpp>
-#include <boost/scoped_ptr.hpp>
-#endif
+#include <memory>
 
 CLANG_DIAG_OFF(deprecated)
 CLANG_DIAG_OFF(uninitialized)
@@ -110,7 +106,7 @@ public:
 
     void setUrl(const QModelIndex &index, const QUrl &url, const QModelIndex &dirIndex);
 
-    int getNUrls() const
+    size_t getNUrls() const noexcept
     {
         return watching.size();
     }
@@ -175,7 +171,7 @@ public:
         urlModel->addUrls(list, row);
     }
 
-    int getNUrls() const
+    size_t getNUrls() const
     {
         return urlModel->getNUrls();
     }
@@ -553,13 +549,13 @@ private:
 
     QStringList _filters;
     SequenceDialogView* _view;
-    boost::scoped_ptr<SequenceItemDelegate> _itemDelegate;
+    std::unique_ptr<SequenceItemDelegate> _itemDelegate;
     FileSystemModelPtr _model;
 
     ///The favorite view and the dialog view don't share the same model as they don't have
     ///the same icon provider
-    boost::scoped_ptr<QFileSystemModel> _favoriteViewModel;
-    boost::scoped_ptr<QFileSystemModel> _lookinViewModel;
+    std::unique_ptr<QFileSystemModel> _favoriteViewModel;
+    std::unique_ptr<QFileSystemModel> _lookinViewModel;
     QVBoxLayout* _mainLayout;
     QString _requestedDir;
     Label* _lookInLabel;

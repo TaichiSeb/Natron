@@ -29,9 +29,6 @@
 #include "Global/Macros.h"
 
 #include <vector>
-#if !defined(Q_MOC_RUN) && !defined(SBK_RUN)
-#include <boost/static_assert.hpp>
-#endif
 
 #include "Global/GlobalDefines.h"
 
@@ -75,7 +72,7 @@ public:
     static U64 toU64(T value)
     {
 GCC_DIAG_UNUSED_LOCAL_TYPEDEFS_OFF
-            BOOST_STATIC_ASSERT(sizeof(T) <= 8);
+            static_assert(sizeof(T) <= 8, "Type is not allowed" );
 GCC_DIAG_UNUSED_LOCAL_TYPEDEFS_ON
         alias_cast_t<T> ac;
 

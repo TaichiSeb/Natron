@@ -31,10 +31,6 @@
 #include <map>
 #include <string>
 
-#if !defined(Q_MOC_RUN) && !defined(SBK_RUN)
-#include <boost/shared_ptr.hpp>
-#endif
-
 CLANG_DIAG_OFF(deprecated)
 #include <QtCore/QMutex>
 #include <QtCore/QString>
@@ -317,7 +313,7 @@ private:
 
 private:
 
-    boost::scoped_ptr<OfxEffectInstancePrivate> _imp;
+    std::unique_ptr<OfxEffectInstancePrivate> _imp;
 };
 
 NATRON_NAMESPACE_EXIT

@@ -28,8 +28,6 @@
 
 #include <stdexcept> // runtime_error
 
-#include <boost/scoped_ptr.hpp>
-
 #ifdef Q_OS_MAC
 // for dockClickHandler and Application::Application()
 #include <objc/objc.h>
@@ -66,7 +64,7 @@ CLANG_DIAG_ON(uninitialized)
 #include "Gui/SplashScreen.h"
 
 // removed in qt5, just revert the commit (1b58d9acc493111390b31f0bffd6b2a76baca91b)
-Q_INIT_RESOURCE_EXTERN(GuiResources);
+//Q_INIT_RESOURCE_EXTERN(GuiResources);
 
 /**
  * @macro Registers a keybind to the application.
@@ -298,10 +296,10 @@ GuiApplicationManager::initializeQApp(int &argc,
 
     app->setQuitOnLastWindowClosed(true);
 
-    //Q_INIT_RESOURCE(GuiResources);
+    Q_INIT_RESOURCE(GuiResources);
     // Q_INIT_RESOURCES expanded, and fixed for use from inside a namespace:
     // (requires using Q_INIT_RESOURCES_EXTERN(GuiResources) before entering the namespace)
-    ::qInitResources_GuiResources();
+ //::qInitResources_GuiResources();
 
 #ifdef DEBUG
     QLocale loc;
@@ -453,7 +451,7 @@ GuiApplicationManager::exitApp(bool warnUserForSave)
     std::list<GuiAppInstancePtr> guiApps;
 
     for (AppInstanceVec::const_iterator it = instances.begin(); it != instances.end(); ++it) {
-        GuiAppInstancePtr app = boost::dynamic_pointer_cast<GuiAppInstance>(*it);
+        GuiAppInstancePtr app = std::dynamic_pointer_cast<GuiAppInstance>(*it);
         if (app) {
             guiApps.push_back(app);
         }
@@ -471,7 +469,7 @@ GuiApplicationManager::exitApp(bool warnUserForSave)
         instances = getAppInstances();
         guiApps.clear();
         for (AppInstanceVec::const_iterator it = instances.begin(); it != instances.end(); ++it) {
-            GuiAppInstancePtr ga = boost::dynamic_pointer_cast<GuiAppInstance>(*it);
+            GuiAppInstancePtr ga = std::dynamic_pointer_cast<GuiAppInstance>(*it);
             if ( ga && ( triedInstances.find(ga) == triedInstances.end() ) ) {
                 guiApps.push_back(ga);
             }

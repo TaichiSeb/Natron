@@ -35,7 +35,6 @@
 
 #include "Global/Macros.h"
 
-#include <boost/scoped_ptr.hpp>
 GCC_DIAG_UNUSED_LOCAL_TYPEDEFS_OFF
 // /usr/local/include/boost/bind/arg.hpp:37:9: warning: unused typedef 'boost_static_assert_typedef_37' [-Wunused-local-typedef]
 #include <boost/bind.hpp>
@@ -118,7 +117,7 @@ NATRON_NAMESPACE_ENTER
 
 using std::make_pair;
 using std::cout; using std::endl;
-using boost::shared_ptr;
+using std::shared_ptr;
 
 
 // protect local classes in anonymous namespace
@@ -534,7 +533,7 @@ Node::getOrRenderLastStrokeImage(unsigned int mipMapLevel,
     QMutexLocker k(&_imp->lastStrokeMovementMutex);
     std::list<RectI> restToRender;
     RotoDrawableItemPtr item = _imp->paintStroke.lock();
-    RotoStrokeItemPtr stroke = boost::dynamic_pointer_cast<RotoStrokeItem>(item);
+    RotoStrokeItemPtr stroke = std::dynamic_pointer_cast<RotoStrokeItem>(item);
 
     assert(stroke);
     if (!stroke) {
@@ -1100,7 +1099,7 @@ Node::loadKnob(const KnobIPtr & knob,
             std::string stringParamName = isChoice->getName() + "Choice";
             for (NodeSerialization::KnobValues::const_iterator it = knobsValues.begin(); it != knobsValues.end(); ++it) {
                 if ( (*it)->getName() == stringParamName ) {
-                    KnobStringPtr stringKnob = boost::dynamic_pointer_cast<KnobString>((*it)->getKnob());
+                    KnobStringPtr stringKnob = std::dynamic_pointer_cast<KnobString>((*it)->getKnob());
                     if (stringKnob) {
                         std::string serializedString = stringKnob->getValue();
                         if ((*it)->_version < KNOB_SERIALIZATION_CHANGE_PLANES_SERIALIZATION) {
@@ -1710,15 +1709,15 @@ Node::findPluginFormatKnobs(const KnobsVec & knobs,
             }
         }
         if (formatSize && formatPar) {
-            _imp->pluginFormatKnobs.formatChoice = boost::dynamic_pointer_cast<KnobChoice>(formatKnob);
+            _imp->pluginFormatKnobs.formatChoice = std::dynamic_pointer_cast<KnobChoice>(formatKnob);
             formatSize->setEvaluateOnChange(false);
             formatPar->setEvaluateOnChange(false);
             formatSize->setSecret(true);
             formatSize->setSecretByDefault(true);
             formatPar->setSecret(true);
             formatPar->setSecretByDefault(true);
-            _imp->pluginFormatKnobs.size = boost::dynamic_pointer_cast<KnobInt>(formatSize);
-            _imp->pluginFormatKnobs.par = boost::dynamic_pointer_cast<KnobDouble>(formatPar);
+            _imp->pluginFormatKnobs.size = std::dynamic_pointer_cast<KnobInt>(formatSize);
+            _imp->pluginFormatKnobs.par = std::dynamic_pointer_cast<KnobDouble>(formatPar);
 
             std::vector<ChoiceOption> formats;
             int defValue;
@@ -2115,7 +2114,7 @@ Node::getOrCreateMainPage()
     KnobPagePtr mainPage;
 
     for (std::size_t i = 0; i < knobs.size(); ++i) {
-        KnobPagePtr p = boost::dynamic_pointer_cast<KnobPage>(knobs[i]);
+        KnobPagePtr p = std::dynamic_pointer_cast<KnobPage>(knobs[i]);
         if ( p && (p->getLabel() != NATRON_PARAMETER_PAGE_NAME_INFO) &&
              (p->getLabel() != NATRON_PARAMETER_PAGE_NAME_EXTRA) ) {
             mainPage = p;
@@ -2160,7 +2159,7 @@ Node::findOrCreateChannelEnabled(const KnobPagePtr& mainPage)
         KnobBoolPtr enabled;
         for (std::size_t j = 0; j < knobs.size(); ++j) {
             if (knobs[j]->getOriginalName() == channelNames[i]) {
-                foundEnabled[i] = boost::dynamic_pointer_cast<KnobBool>(knobs[j]);
+                foundEnabled[i] = std::dynamic_pointer_cast<KnobBool>(knobs[j]);
                 break;
             }
         }
@@ -3381,7 +3380,7 @@ Node::makePreviewImage(SequenceTime time,
         // but any exception in renderROI is probably fatal.
         std::map<ImagePlaneDesc, ImagePtr> planes;
         try {
-            boost::scoped_ptr<EffectInstance::RenderRoIArgs> renderArgs( new EffectInstance::RenderRoIArgs(time,
+            std::unique_ptr<EffectInstance::RenderRoIArgs> renderArgs( new EffectInstance::RenderRoIArgs(time,
                                                                                                            scale,
                                                                                                            mipMapLevel,
                                                                                                            ViewIdx(0), //< preview only renders view 0 (left)
@@ -7065,7 +7064,7 @@ Node::getChannelSelectorKnob(int inputNb) const
                 return KnobChoicePtr();
             }
 
-            return boost::dynamic_pointer_cast<KnobChoice>(knob);
+            return std::dynamic_pointer_cast<KnobChoice>(knob);
         }
 
         return KnobChoicePtr();

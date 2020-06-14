@@ -156,7 +156,7 @@ struct GuiAppInstancePrivate
         , timelineUserKeys()
         , knobDnd()
     {
-        _previewProvider = boost::make_shared<FileDialogPreviewProvider>();
+        _previewProvider = std::make_shared<FileDialogPreviewProvider>();
         rotoData.turboAlreadyActiveBeforePainting = false;
     }
 
@@ -177,7 +177,7 @@ void
 GuiAppInstance::resetPreviewProvider()
 {
     deletePreviewProvider();
-    _imp->_previewProvider = boost::make_shared<FileDialogPreviewProvider>();
+    _imp->_previewProvider = std::make_shared<FileDialogPreviewProvider>();
 }
 
 void
@@ -280,7 +280,7 @@ GuiAppInstance::loadInternal(const CLArgs& cl,
         throw std::runtime_error( e.what() );
     }
 
-    GuiAppInstancePtr thisShared = boost::dynamic_pointer_cast<GuiAppInstance>( shared_from_this() );
+    GuiAppInstancePtr thisShared = std::dynamic_pointer_cast<GuiAppInstance>( shared_from_this() );
     assert(thisShared);
     _imp->_gui = new Gui(thisShared);
     _imp->_gui->createGui();
@@ -501,7 +501,7 @@ GuiAppInstance::createNodeGui(const NodePtr &node,
 
         NodeGuiIPtr parentNodeGui_i = parentMultiInstance->getNodeGui();
         assert(parentNodeGui_i);
-        nodegui->setParentMultiInstance( boost::dynamic_pointer_cast<NodeGui>(parentNodeGui_i) );
+        nodegui->setParentMultiInstance( std::dynamic_pointer_cast<NodeGui>(parentNodeGui_i) );
     }
 
     bool isViewer = node->isEffectViewer() != 0;
@@ -1111,7 +1111,7 @@ GuiAppInstance::onGroupCreationFinished(const NodePtr& node,
                 selectedNode.reset();
             }
         }
-        NodeGuiPtr nodeGui = boost::dynamic_pointer_cast<NodeGui>(node_gui_i);
+        NodeGuiPtr nodeGui = std::dynamic_pointer_cast<NodeGui>(node_gui_i);
         graph->moveNodesForIdealPosition(nodeGui, selectedNode, true);
     }
  

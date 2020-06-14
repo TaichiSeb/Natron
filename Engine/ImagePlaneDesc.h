@@ -253,14 +253,17 @@ private:
     std::vector<std::string> _channels;
     std::string _channelsLabel;
     
+#if !defined(Q_MOC_RUN) && !defined(SBK_RUN)
     friend class boost::serialization::access;
 
     BOOST_SERIALIZATION_SPLIT_MEMBER()
+#endif
 };
 
 NATRON_NAMESPACE_EXIT
 
+#if !defined(Q_MOC_RUN) && !defined(SBK_RUN)
 BOOST_CLASS_VERSION(NATRON_NAMESPACE::ImagePlaneDesc, IMAGEPLANEDESC_SERIALIZATION_VERSION)
-
+#endif
 
 #endif // IMAGECOMPONENTS_H

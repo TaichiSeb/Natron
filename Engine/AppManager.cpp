@@ -169,7 +169,7 @@ setShutDownSignal(int signalId)
     sa.sa_flags = 0;
     sigemptyset(&sa.sa_mask);
     sa.sa_handler = handleShutDownSignal;
-    if (sigaction(signalId, &sa, NULL) == -1) {
+    if (sigaction(signalId, &sa, nullptr) == -1) {
         std::perror("setting up termination signal");
         std::exit(1);
     }
@@ -191,7 +191,7 @@ backTraceSigSegvHandler(int sig,
                         void *secret)
 {
     void *trace[NATRON_UNIX_BACKTRACE_STACK_DEPTH];
-    char **messages = (char **)NULL;
+    char **messages = (char **)nullptr;
     int i, trace_size = 0;
     ucontext_t *uc = (ucontext_t *)secret;
 
@@ -241,7 +241,7 @@ setSigSegvSignal()
     /* if SA_SIGINFO is set, sa_sigaction is to be used instead of sa_handler. */
     sa.sa_sigaction = backTraceSigSegvHandler;
 
-    if (sigaction(SIGSEGV, &sa, NULL) == -1) {
+    if (sigaction(SIGSEGV, &sa, nullptr) == -1) {
         std::perror("setting up sigsegv signal");
         std::exit(1);
     }
@@ -258,7 +258,7 @@ setSigSegvSignal()
 static wchar_t*
 char2wchar(char* arg)
 {
-    wchar_t *res = NULL;
+    wchar_t *res = nullptr;
 
 #ifdef HAVE_BROKEN_MBSTOWCS
     /* Some platforms have a broken implementation of
@@ -267,7 +267,7 @@ char2wchar(char* arg)
      */
     size_t argsize = strlen(arg);
 #else
-    size_t argsize = mbstowcs(NULL, arg, 0);
+    size_t argsize = mbstowcs(nullptr, arg, 0);
 #endif
     size_t count;
     unsigned char *in;
@@ -311,7 +311,7 @@ char2wchar(char* arg)
     while (argsize) {
         size_t converted = mbrtowc(out, (char*)in, argsize, &mbs);
         if (converted == 0) {
-            /* Reached end of string; null char stored. */
+            /* Reached end of string; nullptr char stored. */
             break;
         }
         if (converted == (size_t)-2) {
@@ -322,7 +322,7 @@ char2wchar(char* arg)
             fprintf(stderr, "unexpected mbrtowc result -2\n");
             free(res);
 
-            return NULL;
+            return nullptr;
         }
         if (converted == (size_t)-1) {
             /* Conversion error. Escape as UTF-8b, and start over
@@ -371,8 +371,82 @@ oom:
     fprintf(stderr, "out of memory\n");
     free(res);
 
-    return NULL;
+    return nullptr;
 } // char2wchar
+
+char*
+wchar2char(const wchar_t* text, size_t* error_pos)
+{
+    const size_t len = wcslen(text);
+    char* result = nullptr, * bytes = nullptr;
+    size_t i, size, converted;
+    wchar_t c, buf[2];
+
+    /* The function works in two steps:
+       1. compute the length of the output buffer in bytes (size)
+       2. outputs the bytes */
+    size = 0;
+    buf[1] = 0;
+    while (1) {
+        for (i = 0; i < len; i++) {
+            c = text[i];
+            if (c >= 0xdc80 && c <= 0xdcff) {
+                /* UTF-8b surrogate */
+                if (bytes != nullptr) {
+                    *bytes++ = c - 0xdc00;
+                    size--;
+                }
+                else
+                    size++;
+
+                continue;
+            }
+            else {
+                buf[0] = c;
+                if (bytes != nullptr)
+                    converted = wcstombs(bytes, buf, size);
+                else
+                    converted = wcstombs(nullptr, buf, 0);
+
+                if (converted == (size_t)-1) {
+                    if (result != nullptr)
+                        PyMem_Free(result);
+
+                    if (error_pos != nullptr)
+                        *error_pos = i;
+
+                    return nullptr;
+                }
+
+                if (bytes != nullptr) {
+                    bytes += converted;
+                    size -= converted;
+                }
+                else
+                    size += converted;
+            }
+        }
+
+        if (result != nullptr) {
+            *bytes = '\0';
+            break;
+        }
+
+        size += 1; /* nul byte at the end */
+        result = (char*)PyMem_Malloc(size);
+
+        if (result == nullptr) {
+            if (error_pos != nullptr)
+                *error_pos = (size_t)-1;
+
+            return nullptr;
+        }
+
+        bytes = result;
+    }
+
+    return result;
+}
 
 #endif // if PY_MAJOR_VERSION >= 3
 
@@ -463,11 +537,22 @@ AppManager::loadFromArgs(const CLArgs& cl)
 
     //  QCoreApplication will hold a reference to that appManagerArgc integer until it dies.
     //  Thus ensure that the QCoreApplication is destroyed when returning this function.
+#if PY_MAJOR_VERSION >= 3
+    // PAS SUR DE CE CODE !
+
+    char* args = wchar2char(_imp->commandLineArgsWide.front(), nullptr);
+    initializeQApp(_imp->nArgs, &args); // calls QCoreApplication::QCoreApplication(), which calls setlocale()
+    // see C++ standard 23.2.4.2 vector capacity [lib.vector.capacity]
+    // resizing to a smaller size doesn't free/move memory, so the data pointer remains valid
+    assert(_imp->nArgs <= (int)_imp->commandLineArgsWide.size());
+    _imp->commandLineArgsWide.resize(_imp->nArgs); // Qt may have reduced the numlber of args
+#else
     initializeQApp(_imp->nArgs, &_imp->commandLineArgsUtf8.front()); // calls QCoreApplication::QCoreApplication(), which calls setlocale()
     // see C++ standard 23.2.4.2 vector capacity [lib.vector.capacity]
     // resizing to a smaller size doesn't free/move memory, so the data pointer remains valid
     assert(_imp->nArgs <= (int)_imp->commandLineArgsUtf8.size());
     _imp->commandLineArgsUtf8.resize(_imp->nArgs); // Qt may have reduced the numlber of args
+#endif
 
 #ifdef QT_CUSTOM_THREADPOOL
     // Set the global thread pool (pointed is owned and deleted by QThreadPool at exit)
@@ -595,9 +680,18 @@ AppManager::~AppManager()
     QThreadPool::globalInstance()->waitForDone();
 
     ///Kill caches now because decreaseNCacheFilesOpened can be called
-    _imp->_nodeCache->waitForDeleterThread();
-    _imp->_diskCache->waitForDeleterThread();
-    _imp->_viewerCache->waitForDeleterThread();
+    if (_imp->_nodeCache != nullptr)
+    {
+        _imp->_nodeCache->waitForDeleterThread();
+    }
+    if (_imp->_diskCache != nullptr)
+    {
+        _imp->_diskCache->waitForDeleterThread();
+    }
+    if (_imp->_viewerCache != nullptr)
+    {
+        _imp->_viewerCache->waitForDeleterThread();
+    }
     _imp->_nodeCache.reset();
     _imp->_viewerCache.reset();
     _imp->_diskCache.reset();
@@ -627,7 +721,7 @@ public:
     virtual ~QuitInstanceArgs() {}
 };
 
-typedef boost::shared_ptr<QuitInstanceArgs> QuitInstanceArgsPtr;
+typedef std::shared_ptr<QuitInstanceArgs> QuitInstanceArgsPtr;
 
 void
 AppManager::afterQuitProcessingCallback(const GenericWatcherCallerArgsPtr& args)
@@ -667,7 +761,7 @@ AppManager::quitNow(const AppInstancePtr& instance)
             (*it)->quitAnyProcessing_blocking(false);
         }
     }
-    QuitInstanceArgsPtr args = boost::make_shared<QuitInstanceArgs>();
+    QuitInstanceArgsPtr args = std::make_shared<QuitInstanceArgs>();
     args->instance = instance;
     afterQuitProcessingCallback(args);
 }
@@ -675,7 +769,7 @@ AppManager::quitNow(const AppInstancePtr& instance)
 void
 AppManager::quit(const AppInstancePtr& instance)
 {
-    QuitInstanceArgsPtr args = boost::make_shared<QuitInstanceArgs>();
+    QuitInstanceArgsPtr args = std::make_shared<QuitInstanceArgs>();
 
     args->instance = instance;
     if ( !instance->getProject()->quitAnyProcessingForAllNodes(this, args) ) {
@@ -781,16 +875,16 @@ AppManager::setApplicationLocale()
     // set the C locale second, because it will not overwrite the changes you made to the C++ locale
     // see https://stackoverflow.com/questions/12373341/does-stdlocaleglobal-make-affect-to-printf-function
     char *category = std::setlocale(LC_ALL, "en_US.UTF-8");
-    if (category == NULL) {
+    if (category == nullptr) {
         category = std::setlocale(LC_ALL, "C.UTF-8");
     }
-    if (category == NULL) {
+    if (category == nullptr) {
         category = std::setlocale(LC_ALL, "UTF-8");
     }
-    if (category == NULL) {
+    if (category == nullptr) {
         category = std::setlocale(LC_ALL, "C");
     }
-    if (category == NULL) {
+    if (category == nullptr) {
         qDebug() << "Could not set C locale!";
     }
     std::setlocale(LC_NUMERIC, "C"); // set the locale for LC_NUMERIC only
@@ -850,7 +944,7 @@ AppManager::loadInternal(const CLArgs& cl)
 # endif
 
 
-    _imp->_settings = boost::make_shared<Settings>();
+    _imp->_settings = std::make_shared<Settings>();
     _imp->_settings->initializeKnobsPublic();
 
     bool hasGLForRendering = hasOpenGLForRequirements(eOpenGLRequirementsTypeRendering, 0);
@@ -1072,9 +1166,9 @@ AppManager::loadInternalAfterInitGui(const CLArgs& cl)
         U64 viewerCacheSize = _imp->_settings->getMaximumViewerDiskCacheSize();
         U64 maxDiskCacheNode = _imp->_settings->getMaximumDiskCacheNodeSize();
 
-        _imp->_nodeCache = boost::make_shared<Cache<Image> >("NodeCache", NATRON_CACHE_VERSION, maxCacheRAM, 1.);
-        _imp->_diskCache = boost::make_shared<Cache<Image> >("DiskCache", NATRON_CACHE_VERSION, maxDiskCacheNode, 0.);
-        _imp->_viewerCache = boost::make_shared<Cache<FrameEntry> >("ViewerCache", NATRON_CACHE_VERSION, viewerCacheSize, 0.);
+        _imp->_nodeCache = std::make_shared<Cache<Image> >("NodeCache", NATRON_CACHE_VERSION, maxCacheRAM, 1.);
+        _imp->_diskCache = std::make_shared<Cache<Image> >("DiskCache", NATRON_CACHE_VERSION, maxDiskCacheNode, 0.);
+        _imp->_viewerCache = std::make_shared<Cache<FrameEntry> >("ViewerCache", NATRON_CACHE_VERSION, viewerCacheSize, 0.);
         _imp->setViewerCacheTileSize();
     } catch (std::logic_error&) {
         // ignore
@@ -1230,7 +1324,7 @@ AppManager::newAppInstanceInternal(const CLArgs& cl,
     if (!alwaysBackground) {
         instance = makeNewInstance(_imp->_availableID);
     } else {
-        instance = boost::make_shared<AppInstance>(_imp->_availableID);
+        instance = std::make_shared<AppInstance>(_imp->_availableID);
     }
 
     {
@@ -1844,7 +1938,7 @@ AppManager::getPyPlugsGlobalPath() const
 #endif
 #elif defined(__NATRON_WIN32__)
     wchar_t buffer[MAX_PATH];
-    SHGetFolderPathW(NULL, CSIDL_PROGRAM_FILES_COMMON, NULL, SHGFP_TYPE_CURRENT, buffer);
+    SHGetFolderPathW(nullptr, CSIDL_PROGRAM_FILES_COMMON, nullptr, SHGFP_TYPE_CURRENT, buffer);
     std::wstring str;
     str.append(L"\\");
     str.append( QString::fromUtf8("%1\\Plugins").arg( QString::fromUtf8(NATRON_APPLICATION_NAME) ).toStdWString() );
@@ -1880,8 +1974,11 @@ addToPythonPathFunctor(const QDir& directory)
     std::string addToPythonPath("sys.path.append(str('");
 
     addToPythonPath += directory.absolutePath().toStdString();
+#if PY_MAJOR_VERSION >= 3
+    addToPythonPath += "'))\n";
+#else
     addToPythonPath += "').decode('utf-8'))\n";
-
+#endif
     std::string err;
     bool ok  = NATRON_PYTHON_NAMESPACE::interpretPythonScript(addToPythonPath, &err, 0);
     if (!ok) {
@@ -1957,7 +2054,7 @@ AppManager::loadPythonGroups()
     ///Also import Pyside.QtCore and Pyside.QtGui (the later only in non background mode)
     {
         std::string s;
-#     if (SHIBOKEN_MAJOR_VERSION == 2)
+#     if (SHIBOKEN_MAJOR_VERSION >= 2)
         s = "import PySide2\nimport PySide2.QtCore as QtCore";
 #     else
         s = "import PySide\nimport PySide.QtCore as QtCore";
@@ -1975,7 +2072,7 @@ AppManager::loadPythonGroups()
 
     if ( !isBackground() ) {
         std::string s;
-#     if (SHIBOKEN_MAJOR_VERSION == 2)
+#     if (SHIBOKEN_MAJOR_VERSION >= 2)
         s = "import PySide2.QtGui as QtGui";
 #     else
         s = "import PySide.QtGui as QtGui";
@@ -2314,7 +2411,7 @@ AppManager::getPluginBinaryFromOldID(const QString & pluginId,
                     break;
                 }
             }
-            assert(nextPlugin != NULL); // there should be at least one version
+            assert(nextPlugin != nullptr); // there should be at least one version
 
             // Could not find the exact version... get the major version above,
             // else the highest version.
@@ -2388,7 +2485,7 @@ AppManager::getPluginBinary(const QString & pluginId,
                 break;
             }
         }
-        assert(nextPlugin != NULL); // there should be at least one version
+        assert(nextPlugin != nullptr); // there should be at least one version
 
         // Could not find the exact version... get the major version above,
         // else the highest version.
@@ -2611,7 +2708,7 @@ AppManager::setLoadingStatus(const QString & str)
 AppInstancePtr
 AppManager::makeNewInstance(int appID) const
 {
-    return boost::make_shared<AppInstance>(appID);
+    return std::make_shared<AppInstance>(appID);
 }
 
 void
@@ -3006,8 +3103,8 @@ AppManager::onOFXDialogOnMainThreadReceived(OfxImageEffectInstance* instance,
                                             void* instanceData)
 {
     assert( QThread::currentThread() == qApp->thread() );
-    if (instance == NULL) {
-        // instance may be NULL if using OfxDialogSuiteV1
+    if (instance == nullptr) {
+        // instance may be nullptr if using OfxDialogSuiteV1
         OfxHost::OfxHostDataTLSPtr tls = _imp->ofxHost->getTLSData();
         instance = tls->lastEffectCallingMainEntry;
     } else {
@@ -3064,14 +3161,17 @@ NATRON_PYTHON_NAMESPACE::PyStringToStdString(PyObject* obj)
     assert( PyThreadState_Get() );
     std::string ret;
 
+#if PY_MAJOR_VERSION < 3
     if ( PyString_Check(obj) ) {
         char* buf = PyString_AsString(obj);
         if (buf) {
             ret += std::string(buf);
         }
-    } else if ( PyUnicode_Check(obj) ) {
+    } else 
+#endif
+    if ( PyUnicode_Check(obj) ) {
         /*PyObject * temp_bytes = PyUnicode_AsEncodedString(obj, "ASCII", "strict"); // Owned reference
-           if (temp_bytes != NULL) {
+           if (temp_bytes != nullptr) {
            char* cstr = PyBytes_AS_STRING(temp_bytes); // Borrowed pointer
            ret.append(cstr);
            Py_DECREF(temp_bytes);
@@ -3222,17 +3322,14 @@ AppManager::initPython()
         } else {
             pythonPath = toPrependStr + pathSep + pythonPath;
         }
-        // qputenv on minw will just call putenv, but we want to keep the utf16 info, so we need to call _wputenv
-#     if 0//def __NATRON_WIN32__
-        _wputenv_s(L"PYTHONPATH", StrUtils::utf8_to_utf16(pythonPath.toStdString()).c_str());
-#     else
-        std::string pythonPathString = pythonPath.toStdString();
-        qputenv( "PYTHONPATH", pythonPathString.c_str() );
-        //Py_SetPath( pythonPathString.c_str() ); // does not exist in Python 2
-#     endif
 #     if PY_MAJOR_VERSION >= 3
         std::wstring pythonPathString = StrUtils::utf8_to_utf16( pythonPath.toStdString() );
         Py_SetPath( pythonPathString.c_str() ); // argument is copied internally, no need to use static storage
+#     else
+        //_wputenv_s(L"PYTHONPATH", StrUtils::utf8_to_utf16(pythonPath.toStdString()).c_str());
+        std::string pythonPathString = pythonPath.toStdString();
+        qputenv("PYTHONPATH", pythonPathString.c_str());
+        //Py_SetPath( pythonPathString.c_str() ); // does not exist in Python 2
 #     endif
 #     if defined(NATRON_CONFIG_SNAPSHOT) || defined(DEBUG)
         printf( "PYTHONPATH set to %s\n", pythonPath.toStdString().c_str() );
@@ -3293,7 +3390,7 @@ AppManager::initPython()
     //
 #if PY_MAJOR_VERSION >= 3
     // Python 3
-    PySys_SetArgv( argc, &_imp->args.front() ); /// relative module import
+    PySys_SetArgv(_imp->commandLineArgsWide.size(), &_imp->commandLineArgsWide.front() ); /// relative module import
 #else
     // Python 2
     PySys_SetArgv( _imp->commandLineArgsUtf8.size(), &_imp->commandLineArgsUtf8.front() ); /// relative module import
@@ -3330,21 +3427,25 @@ AppManager::initPython()
         printf( "Py_OptimizeFlag is %d\n", Py_OptimizeFlag );
         printf( "Py_NoSiteFlag is %d\n", Py_NoSiteFlag );
         printf( "Py_BytesWarningFlag is %d\n", Py_BytesWarningFlag );
-        printf( "Py_UseClassExceptionsFlag is %d\n", Py_UseClassExceptionsFlag );
+        //printf( "Py_UseClassExceptionsFlag is %d\n", Py_UseClassExceptionsFlag );
         printf( "Py_FrozenFlag is %d\n", Py_FrozenFlag );
-        printf( "Py_TabcheckFlag is %d\n", Py_TabcheckFlag );
-        printf( "Py_UnicodeFlag is %d\n", Py_UnicodeFlag );
+        //printf( "Py_TabcheckFlag is %d\n", Py_TabcheckFlag );
+        //printf( "Py_UnicodeFlag is %d\n", Py_UnicodeFlag );
         printf( "Py_IgnoreEnvironmentFlag is %d\n", Py_IgnoreEnvironmentFlag );
-        printf( "Py_DivisionWarningFlag is %d\n", Py_DivisionWarningFlag );
+        //printf( "Py_DivisionWarningFlag is %d\n", Py_DivisionWarningFlag );
         printf( "Py_DontWriteBytecodeFlag is %d\n", Py_DontWriteBytecodeFlag );
         printf( "Py_NoUserSiteDirectory is %d\n", Py_NoUserSiteDirectory );
-        printf( "Py_GetProgramName is %s\n", Py_GetProgramName() );
-        printf( "Py_GetPrefix is %s\n", Py_GetPrefix() );
-        printf( "Py_GetExecPrefix is %s\n", Py_GetPrefix() );
-        printf( "Py_GetProgramFullPath is %s\n", Py_GetProgramFullPath() );
-        printf( "Py_GetPath is %s\n", Py_GetPath() );
-        printf( "Py_GetPythonHome is %s\n", Py_GetPythonHome() );
-        bool ok = NATRON_PYTHON_NAMESPACE::interpretPythonScript("from distutils.sysconfig import get_python_lib; print('Python library is in ' + get_python_lib())", &err, 0);
+        printf( "Py_GetProgramName is %ls\n", Py_GetProgramName() );
+        printf( "Py_GetPrefix is %ls\n", Py_GetPrefix() );
+        printf( "Py_GetExecPrefix is %ls\n", Py_GetPrefix() );
+        printf( "Py_GetProgramFullPath is %ls\n", Py_GetProgramFullPath() );
+        printf( "Py_GetPath is %ls\n", Py_GetPath() );
+        printf( "Py_GetPythonHome is %ls\n", Py_GetPythonHome() );
+        bool ok = NATRON_PYTHON_NAMESPACE::interpretPythonScript("from distutils.sysconfig import get_python_lib, get_config_vars; print('Python library is in ' + get_python_lib()); print('Vars :' + str(get_config_vars()))", &err, 0);
+        ok = NATRON_PYTHON_NAMESPACE::interpretPythonScript("import importlib.util; spec=importlib.util.find_spec('PySide2.QtCore');", &err, 0);
+        if (!ok) {
+            printf("Error : %s", QString::fromUtf8(err.c_str()).toStdString().c_str());
+        }
         assert(ok);
         Q_UNUSED(ok);
     }
@@ -4013,18 +4114,26 @@ NATRON_PYTHON_NAMESPACE::interpretPythonScript(const std::string& script,
 
             PyObject* pyStr = PyObject_Str(pyExcValue);
             if (pyStr) {
+#if PY_MAJOR_VERSION >= 3
+                const char* str = PyUnicode_AsUTF8(pyStr);
+#else
                 const char* str = PyString_AsString(pyStr);
+#endif
                 if (error && str) {
                     *error += std::string("Python exception: ") + str + '\n';
                 }
                 Py_DECREF(pyStr);
 
                 // See if we can get a full traceback
+#if PY_MAJOR_VERSION >= 3
+                PyObject* module_name = PyUnicode_FromString("traceback");
+#else
                 PyObject* module_name = PyString_FromString("traceback");
+#endif
                 PyObject* pyth_module = PyImport_Import(module_name);
                 Py_DECREF(module_name);
 
-                if (pyth_module != NULL) {
+                if (pyth_module != nullptr) {
                     PyObject* pyth_func;
                     if (!pyExcTraceback) {
                         pyth_func = PyObject_GetAttrString(pyth_module, "format_exception_only");
@@ -4033,16 +4142,24 @@ NATRON_PYTHON_NAMESPACE::interpretPythonScript(const std::string& script,
                     }
                     Py_DECREF(pyth_module);
                     if (pyth_func && PyCallable_Check(pyth_func)) {
-                        PyObject *pyth_val = PyObject_CallFunctionObjArgs(pyth_func, pyExcType, pyExcValue, pyExcTraceback, NULL);
+                        PyObject *pyth_val = PyObject_CallFunctionObjArgs(pyth_func, pyExcType, pyExcValue, pyExcTraceback, nullptr);
                         if (pyth_val) {
-                            PyObject *emptyString = PyString_FromString("");
+#if PY_MAJOR_VERSION >= 3
+                            PyObject *emptyString = PyUnicode_FromString("");
+#else
+                            PyObject* emptyString = PyString_FromString("");
+#endif
                             PyObject *strList = PyObject_CallMethod(emptyString, (char*)"join", (char*)"(O)", pyth_val);
                             Py_DECREF(emptyString);
                             Py_DECREF(pyth_val);
                             pyStr = PyObject_Str(strList);
                             Py_DECREF(strList);
                             if (pyStr) {
+#if PY_MAJOR_VERSION >= 3
+                                str = PyUnicode_AsUTF8(pyStr);
+#else
                                 str = PyString_AsString(pyStr);
+#endif
                                 if (error && str) {
                                     *error += std::string(str) + '\n';
                                 }
@@ -4408,7 +4525,7 @@ getGroupInfosInternal(const std::string& modulePath,
     }
 
 
-    bool ok = NATRON_PYTHON_NAMESPACE::interpretPythonScript(deleteScript, &err, NULL);
+    bool ok = NATRON_PYTHON_NAMESPACE::interpretPythonScript(deleteScript, &err, nullptr);
     assert(ok);
     if (!ok) {
         throw std::runtime_error("getGroupInfos(): interpretPythonScript(" + deleteScript + " failed!");

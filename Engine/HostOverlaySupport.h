@@ -28,10 +28,7 @@
 
 #include "Global/Macros.h"
 
-#if !defined(Q_MOC_RUN) && !defined(SBK_RUN)
-#include <boost/shared_ptr.hpp>
-#include <boost/scoped_ptr.hpp>
-#endif
+#include <memory>
 
 #include "Engine/EngineFwd.h"
 
@@ -60,15 +57,15 @@ public:
     KnobIPtr getKnob(int enumID) const;
 
     template <typename T>
-    boost::shared_ptr<T> getKnob(int enumID) const
+    std::shared_ptr<T> getKnob(int enumID) const
     {
         KnobIPtr knob = getKnob(enumID);
 
         if (!knob) {
-            return boost::shared_ptr<T>();
+            return std::shared_ptr<T>();
         }
 
-        return boost::dynamic_pointer_cast<T>(knob);
+        return std::dynamic_pointer_cast<T>(knob);
     }
 
     /**
@@ -85,7 +82,7 @@ protected:
 private:
 
 
-    boost::scoped_ptr<HostOverlayKnobsPrivate> _imp;
+    std::unique_ptr<HostOverlayKnobsPrivate> _imp;
 };
 
 class HostOverlayKnobsTransform

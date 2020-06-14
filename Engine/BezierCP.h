@@ -34,11 +34,6 @@
 
 #include "Global/Macros.h"
 
-#if !defined(Q_MOC_RUN) && !defined(SBK_RUN)
-#include <boost/scoped_ptr.hpp>
-#include <boost/shared_ptr.hpp>
-#endif
-
 #include "Global/GlobalDefines.h"
 
 #include "Engine/ViewIdx.h"
@@ -175,7 +170,7 @@ public:
 
 private:
 
-    boost::scoped_ptr<BezierCPPrivate> _imp;
+    std::unique_ptr<BezierCPPrivate> _imp;
 };
 
 typedef std::list<BezierCPPtr> BezierCPs;

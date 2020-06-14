@@ -28,11 +28,6 @@
 
 #include "Global/Macros.h"
 
-#if !defined(Q_MOC_RUN) && !defined(SBK_RUN)
-#include <boost/scoped_ptr.hpp>
-#endif
-
-
 #include "Global/GlobalDefines.h"
 #include "Engine/ImagePlaneDesc.h"
 
@@ -106,7 +101,7 @@ public:
 
 private:
 
-    boost::scoped_ptr<NodeMetadataPrivate> _imp;
+    std::unique_ptr<NodeMetadataPrivate> _imp;
 };
 
 NATRON_NAMESPACE_EXIT

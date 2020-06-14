@@ -32,10 +32,7 @@
 #include <set>
 #include <string>
 
-#if !defined(Q_MOC_RUN) && !defined(SBK_RUN)
-#include <boost/scoped_ptr.hpp>
-#include <boost/shared_ptr.hpp>
-#endif
+#include <memory>
 
 CLANG_DIAG_OFF(deprecated-declarations)
 #include <QtCore/QObject>
@@ -250,7 +247,7 @@ private:
 
 
     RotoDrawableItem* findPreviousInHierarchy();
-    boost::scoped_ptr<RotoDrawableItemPrivate> _imp;
+    std::unique_ptr<RotoDrawableItemPrivate> _imp;
 };
 
 NATRON_NAMESPACE_EXIT

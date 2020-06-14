@@ -28,8 +28,6 @@
 #include <cassert>
 #include <stdexcept>
 
-#include <boost/scoped_ptr.hpp>
-
 #include "Engine/AbortableRenderInfo.h"
 #include "Engine/AppManager.h"
 #include "Engine/Settings.h"
@@ -260,7 +258,7 @@ EffectInstance::treeRecurseFunctor(bool isRenderFunctor,
 
                                 std::map<ImagePlaneDesc, ImagePtr> inputImgs;
                                 {
-                                    boost::scoped_ptr<EffectInstance::RenderRoIArgs> renderArgs;
+                                    std::unique_ptr<EffectInstance::RenderRoIArgs> renderArgs;
                                     renderArgs.reset( new EffectInstance::RenderRoIArgs( f, //< time
                                                                                          upstreamScale, //< scale
                                                                                          upstreamMipMapLevel, //< mipmapLevel (redundant with the scale)
@@ -337,7 +335,7 @@ EffectInstance::getInputsRoIsFunctor(bool useTransforms,
     } else {
         ///Setup global data for the node for the whole frame render
 
-        NodeFrameRequestPtr tmp = boost::make_shared<NodeFrameRequest>();
+        NodeFrameRequestPtr tmp = std::make_shared<NodeFrameRequest>();
         tmp->mappedScale.x = tmp->mappedScale.y = Image::getScaleFromMipMapLevel(mappedLevel);
         tmp->nodeHash = effect->getRenderHash();
 
@@ -406,7 +404,7 @@ EffectInstance::getInputsRoIsFunctor(bool useTransforms,
 
         ///Concatenate transforms if needed
         if (useTransforms) {
-            fvRequest->globalData.transforms = boost::make_shared<InputMatrixMap>();
+            fvRequest->globalData.transforms = std::make_shared<InputMatrixMap>();
 #pragma message WARN("TODO: can set draftRender properly here?")
             effect->tryConcatenateTransforms( time, /*draftRender=*/false, view, nodeRequest->mappedScale, fvRequest->globalData.transforms.get() );
         }
@@ -816,7 +814,7 @@ ParallelRenderArgsSetter::updateNodesRequest(const FrameRequestMap& request)
     }
 }
 
-ParallelRenderArgsSetter::ParallelRenderArgsSetter(const boost::shared_ptr<std::map<NodePtr, ParallelRenderArgsPtr> >& args)
+ParallelRenderArgsSetter::ParallelRenderArgsSetter(const std::shared_ptr<std::map<NodePtr, ParallelRenderArgsPtr> >& args)
     : argsMap(args)
 {
     // Ensure this thread gets an OpenGL context for the render of the frame

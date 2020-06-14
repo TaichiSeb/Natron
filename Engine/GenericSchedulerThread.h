@@ -26,6 +26,8 @@
 #include <Python.h>
 // ***** END PYTHON BLOCK *****
 
+#include <memory>
+
 #include <QThread>
 
 #include "Engine/EngineFwd.h"
@@ -314,7 +316,7 @@ private:
     virtual void run() OVERRIDE FINAL;
 
     friend struct GenericSchedulerThreadPrivate;
-    boost::scoped_ptr<GenericSchedulerThreadPrivate> _imp;
+    std::unique_ptr<GenericSchedulerThreadPrivate> _imp;
 };
 
 NATRON_NAMESPACE_EXIT

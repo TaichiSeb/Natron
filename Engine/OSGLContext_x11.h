@@ -31,9 +31,6 @@
 #include "Global/GLIncludes.h"
 #include "Engine/EngineFwd.h"
 
-#if !defined(Q_MOC_RUN) && !defined(SBK_RUN)
-#include <boost/scoped_ptr.hpp>
-#endif
 #ifdef __NATRON_LINUX__
 
 #include "Global/GlobalDefines.h"
@@ -48,7 +45,7 @@ class OSGLContext_glx_data
 {
 public:
 
-    boost::scoped_ptr<OSGLContext_glx_dataPrivate> _imp;
+    std::unique_ptr<OSGLContext_glx_dataPrivate> _imp;
 
 
     OSGLContext_glx_data();
@@ -81,7 +78,7 @@ public:
 
 private:
     friend struct OSGLContext_x11Private;
-    boost::scoped_ptr<OSGLContext_x11Private> _imp;
+    std::unique_ptr<OSGLContext_x11Private> _imp;
 };
 
 NATRON_NAMESPACE_EXIT

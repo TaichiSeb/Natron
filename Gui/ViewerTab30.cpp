@@ -369,7 +369,7 @@ ViewerTab::createTrackerInterface(const NodeGuiPtr& n)
         n->ensurePanelCreated();
         MultiInstancePanelPtr multiPanel = n->getMultiInstancePanel();
         if (multiPanel) {
-            TrackerPanelV1Ptr trackPanel = boost::dynamic_pointer_cast<TrackerPanelV1>(multiPanel);
+            TrackerPanelV1Ptr trackPanel = std::dynamic_pointer_cast<TrackerPanelV1>(multiPanel);
             assert(trackPanel);
             tracker = new TrackerGui(trackPanel, this);
         }

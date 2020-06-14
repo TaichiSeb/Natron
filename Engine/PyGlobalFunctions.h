@@ -39,8 +39,11 @@
 
 #include "Engine/EngineFwd.h"
 
-NATRON_NAMESPACE_ENTER;
-NATRON_PYTHON_NAMESPACE_ENTER;
+using namespace Natron;
+using namespace Natron::Python;
+
+//NATRON_NAMESPACE_ENTER;
+//NATRON_PYTHON_NAMESPACE_ENTER;
 
 class PyCoreApplication
 {
@@ -228,8 +231,8 @@ public:
     }
 };
 
-NATRON_PYTHON_NAMESPACE_EXIT;
-NATRON_NAMESPACE_EXIT;
+//NATRON_PYTHON_NAMESPACE_EXIT;
+//NATRON_NAMESPACE_EXIT;
 
 #if defined(PYSIDE_H) && defined(PYSIDE_OLD)
 namespace PySide {

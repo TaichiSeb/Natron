@@ -160,7 +160,7 @@ struct ViewerTabPrivate
     TimeLineGui* timeLineGui;
 
     // This is all nodes that have a viewer context
-    std::map<NodeGuiWPtr, NodeViewerContextPtr> nodesContext;
+    std::map<NodeGuiWPtr, NodeViewerContextPtr, std::owner_less<NodeGuiWPtr> > nodesContext;
 
     /*
        Tells for a given plug-in ID, which nodes is currently activated in the viewer interface

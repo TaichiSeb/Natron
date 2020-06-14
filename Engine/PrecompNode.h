@@ -28,11 +28,6 @@
 
 #include "Global/Macros.h"
 
-#if !defined(Q_MOC_RUN) && !defined(SBK_RUN)
-#include <boost/shared_ptr.hpp>
-#include <boost/scoped_ptr.hpp>
-#endif
-
 #include "Engine/OutputEffectInstance.h"
 #include "Engine/EngineFwd.h"
 
@@ -125,7 +120,7 @@ private:
                              ViewSpec view,
                              double time,
                              bool originatedFromMainThread) OVERRIDE FINAL;
-    boost::scoped_ptr<PrecompNodePrivate> _imp;
+    std::unique_ptr<PrecompNodePrivate> _imp;
 };
 
 NATRON_NAMESPACE_EXIT

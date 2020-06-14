@@ -28,9 +28,8 @@
 
 #include "Global/Macros.h"
 
-#if !defined(Q_MOC_RUN) && !defined(SBK_RUN)
-#include <boost/scoped_ptr.hpp>
-#endif
+#include <memory>
+#include <string>
 
 #include "Engine/EffectInstance.h"
 #include "Engine/ViewIdx.h"
@@ -188,7 +187,7 @@ private:
                             int* inputNb) OVERRIDE FINAL WARN_UNUSED_RETURN;
     virtual StatusEnum render(const RenderActionArgs& args) OVERRIDE WARN_UNUSED_RETURN;
     virtual void refreshExtraStateAfterTimeChanged(bool isPlayback, double time)  OVERRIDE FINAL;
-    boost::scoped_ptr<RotoPaintPrivate> _imp;
+    std::unique_ptr<RotoPaintPrivate> _imp;
 };
 
 /**

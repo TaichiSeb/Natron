@@ -31,17 +31,10 @@
 #include <limits>
 #include <cassert>
 #include <stdexcept>
+#include <memory>
 
 #include <QtCore/QLineF>
 #include <QtCore/QDebug>
-
-GCC_DIAG_UNUSED_LOCAL_TYPEDEFS_OFF
-// /usr/local/include/boost/bind/arg.hpp:37:9: warning: unused typedef 'boost_static_assert_typedef_37' [-Wunused-local-typedef]
-#include <boost/bind.hpp>
-#include <boost/shared_ptr.hpp>
-#include <boost/math/special_functions/fpclassify.hpp>
-GCC_DIAG_UNUSED_LOCAL_TYPEDEFS_ON
-
 
 #include "Engine/AppInstance.h"
 #include "Engine/Bezier.h"
@@ -328,7 +321,7 @@ RotoStrokeItem::appendPoint(bool newStroke,
     assert( QThread::currentThread() == qApp->thread() );
 
 
-    RotoStrokeItemPtr thisShared = boost::dynamic_pointer_cast<RotoStrokeItem>( shared_from_this() );
+    RotoStrokeItemPtr thisShared = std::dynamic_pointer_cast<RotoStrokeItem>( shared_from_this() );
     assert(thisShared);
     {
         QMutexLocker k(&itemMutex);
@@ -350,9 +343,9 @@ RotoStrokeItem::appendPoint(bool newStroke,
         RotoStrokeItemPrivate::StrokeCurves* stroke = 0;
         if (newStroke) {
             RotoStrokeItemPrivate::StrokeCurves s;
-            s.xCurve = boost::make_shared<Curve>();
-            s.yCurve = boost::make_shared<Curve>();
-            s.pressureCurve = boost::make_shared<Curve>();
+            s.xCurve = std::make_shared<Curve>();
+            s.yCurve = std::make_shared<Curve>();
+            s.pressureCurve = std::make_shared<Curve>();
             _imp->strokes.push_back(s);
         }
         stroke = &_imp->strokes.back();
@@ -667,9 +660,9 @@ RotoStrokeItem::clone(const RotoItem* other)
         for (std::vector<RotoStrokeItemPrivate::StrokeCurves>::const_iterator it = otherStroke->_imp->strokes.begin();
              it != otherStroke->_imp->strokes.end(); ++it) {
             RotoStrokeItemPrivate::StrokeCurves s;
-            s.xCurve = boost::make_shared<Curve>();
-            s.yCurve = boost::make_shared<Curve>();
-            s.pressureCurve = boost::make_shared<Curve>();
+            s.xCurve = std::make_shared<Curve>();
+            s.yCurve = std::make_shared<Curve>();
+            s.pressureCurve = std::make_shared<Curve>();
             s.xCurve->clone( *(it->xCurve) );
             s.yCurve->clone( *(it->yCurve) );
             s.pressureCurve->clone( *(it->pressureCurve) );
@@ -698,9 +691,9 @@ RotoStrokeItem::save(RotoItemSerialization* obj) const
         s->_brushType = (int)_imp->type;
         for (std::vector<RotoStrokeItemPrivate::StrokeCurves>::const_iterator it = _imp->strokes.begin();
              it != _imp->strokes.end(); ++it) {
-            CurvePtr xCurve = boost::make_shared<Curve>();
-            CurvePtr yCurve = boost::make_shared<Curve>();
-            CurvePtr pressureCurve = boost::make_shared<Curve>();
+            CurvePtr xCurve = std::make_shared<Curve>();
+            CurvePtr yCurve = std::make_shared<Curve>();
+            CurvePtr pressureCurve = std::make_shared<Curve>();
             xCurve->clone( *(it->xCurve) );
             yCurve->clone( *(it->yCurve) );
             pressureCurve->clone( *(it->pressureCurve) );
@@ -731,9 +724,9 @@ RotoStrokeItem::load(const RotoItemSerialization & obj)
         for (std::list<CurvePtr>::const_iterator it = s->_xCurves.begin();
              it != s->_xCurves.end(); ++it, ++itY, ++itP) {
             RotoStrokeItemPrivate::StrokeCurves s;
-            s.xCurve = boost::make_shared<Curve>();
-            s.yCurve = boost::make_shared<Curve>();
-            s.pressureCurve = boost::make_shared<Curve>();
+            s.xCurve = std::make_shared<Curve>();
+            s.yCurve = std::make_shared<Curve>();
+            s.pressureCurve = std::make_shared<Curve>();
             s.xCurve->clone( **(it) );
             s.yCurve->clone( **(itY) );
             s.pressureCurve->clone( **(itP) );

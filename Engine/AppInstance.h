@@ -39,13 +39,6 @@
 #include <QtCore/QObject>  // for Q_OBJECT, Q_SIGNALS, Q_SLOTS
 #include <QtCore/QMutex>
 
-#if !defined(Q_MOC_RUN) && !defined(SBK_RUN)
-#include <boost/noncopyable.hpp>
-#include <boost/shared_ptr.hpp>
-#include <boost/enable_shared_from_this.hpp>
-#include <boost/scoped_ptr.hpp>
-#endif
-
 #include "Global/GlobalDefines.h"
 #include "Engine/RectD.h"
 #include "Engine/TimeLineKeyFrames.h"
@@ -91,8 +84,7 @@ public:
 
 class AppInstance
     : public QObject
-    , public boost::noncopyable
-    , public boost::enable_shared_from_this<AppInstance>
+    , public std::enable_shared_from_this<AppInstance>
     , public TimeLineKeyFrames
 {
 GCC_DIAG_SUGGEST_OVERRIDE_OFF
@@ -104,6 +96,8 @@ public:
     // constructors should be privatized in any class that derives from boost::enable_shared_from_this<>
 
     AppInstance(int appID);
+    AppInstance(const AppInstance&) = delete;
+    AppInstance& operator=(const AppInstance&) = delete;
 
 public:
 
@@ -218,6 +212,7 @@ public:
         return eStandardButtonYes;
     }
 
+#if !defined(Q_MOC_RUN) && !defined(SBK_RUN)
     virtual void loadProjectGui(bool /*isAutosave*/, boost::archive::xml_iarchive & /*archive*/) const
     {
     }
@@ -225,6 +220,7 @@ public:
     virtual void saveProjectGui(boost::archive::xml_oarchive & /*archive*/)
     {
     }
+#endif
 
     virtual void setupViewersForViews(const std::vector<std::string>& /*viewNames*/)
     {
@@ -405,7 +401,7 @@ public:
 
     virtual void getRenderStrokeData(RectD* /*lastStrokeMovementBbox*/,
                                      std::list<std::pair<Point, double> >* /*lastStrokeMovementPoints*/,
-                                     double */*distNextIn*/,
+                                     double * /*distNextIn*/,
                                      ImagePtr* /*strokeImage*/) const {}
 
     virtual void updateStrokeImage(const ImagePtr& /*image*/,
@@ -474,7 +470,7 @@ private:
     NodePtr createNodeFromPythonModule(Plugin* plugin,
                                        const CreateNodeArgs& args);
 
-    boost::scoped_ptr<AppInstancePrivate> _imp;
+    std::unique_ptr<AppInstancePrivate> _imp;
 };
 
 class CreatingNodeTreeFlag_RAII

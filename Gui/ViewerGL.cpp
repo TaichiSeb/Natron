@@ -51,6 +51,7 @@ GCC_DIAG_UNUSED_PRIVATE_FIELD_ON
 #include <QtOpenGL/QGLShaderProgram>
 #include <QTreeWidget>
 #include <QTabBar>
+#include <QWindow>
 
 #include "Engine/Lut.h"
 #include "Engine/Node.h"
@@ -1506,7 +1507,7 @@ ViewerGL::endTransferBufferFromRAMToGPU(int textureIndex,
 
     if (isPartialRect) {
         TextureInfo info;
-        info.texture = boost::dynamic_pointer_cast<Texture>(texture);
+        info.texture = std::dynamic_pointer_cast<Texture>(texture);
         info.gain = gain;
         info.gamma = gamma;
         info.offset = offset;
@@ -1769,7 +1770,7 @@ ViewerGL::mousePressEvent(QMouseEvent* e)
     if ( buttonDownIsLeft(e) ) {
         NodeGuiIPtr gui_i = _imp->viewerTab->getInternalNode()->getNode()->getNodeGui();
         assert(gui_i);
-        NodeGuiPtr gui = boost::dynamic_pointer_cast<NodeGui>(gui_i);
+        NodeGuiPtr gui = std::dynamic_pointer_cast<NodeGui>(gui_i);
         _imp->viewerTab->getGui()->selectNode(gui);
     }
 
@@ -2781,7 +2782,7 @@ ViewerGL::wheelEvent(QWheelEvent* e)
     }
 
     NodeGuiIPtr nodeGui_i = _imp->viewerTab->getInternalNode()->getNode()->getNodeGui();
-    NodeGuiPtr nodeGui = boost::dynamic_pointer_cast<NodeGui>(nodeGui_i);
+    NodeGuiPtr nodeGui = std::dynamic_pointer_cast<NodeGui>(nodeGui_i);
     gui->selectNode(nodeGui);
 
     double zoomFactor;
@@ -3627,7 +3628,7 @@ double
 ViewerGL::getScreenPixelRatio() const
 {
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
-    return windowHandle()->devicePixelRatio()
+    return windowHandle()->devicePixelRatio();
 #else
     return 1.;
 #endif

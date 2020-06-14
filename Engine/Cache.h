@@ -33,6 +33,7 @@
 #include <fstream>
 #include <functional>
 #include <list>
+#include <memory>
 #include <set>
 #include <cstddef>
 #include <utility>
@@ -52,10 +53,6 @@ GCC_DIAG_OFF(deprecated)
 #include <QtCore/QBuffer>
 #include <QtCore/QRunnable>
 GCC_DIAG_ON(deprecated)
-#if !defined(Q_MOC_RUN) && !defined(SBK_RUN)
-#include <boost/shared_ptr.hpp>
-#include <boost/make_shared.hpp>
-#endif
 
 #include "Engine/AppManager.h" //for access to settings
 #include "Engine/CacheEntry.h"
@@ -86,7 +83,7 @@ class DeleterThread
     : public QThread
 {
     mutable QMutex _entriesQueueMutex;
-    std::list<boost::shared_ptr<T> >_entriesQueue;
+    std::list<std::shared_ptr<T> >_entriesQueue;
     QWaitCondition _entriesQueueNotEmptyCond;
     CacheAPI* cache;
     QMutex mustQuitMutex;
@@ -112,7 +109,7 @@ public:
     {
     }
 
-    void appendToQueue(const std::list<boost::shared_ptr<T> > & entriesToDelete)
+    void appendToQueue(const std::list<std::shared_ptr<T> > & entriesToDelete)
     {
         if ( entriesToDelete.empty() ) {
             return;
@@ -141,7 +138,7 @@ public:
 
         {
             QMutexLocker k2(&_entriesQueueMutex);
-            _entriesQueue.push_back( boost::shared_ptr<T>() );
+            _entriesQueue.push_back( std::shared_ptr<T>() );
             _entriesQueueNotEmptyCond.wakeOne();
         }
         while (mustQuit) {
@@ -168,7 +165,7 @@ private:
             }
 
             {
-                boost::shared_ptr<T> front;
+                std::shared_ptr<T> front;
                 {
                     QMutexLocker k(&_entriesQueueMutex);
                     if ( quit && _entriesQueue.empty() ) {
@@ -393,8 +390,8 @@ public:
     typedef typename EntryType::data_t data_t;
     typedef typename EntryType::key_t key_t;
     typedef typename EntryType::param_t param_t;
-    typedef boost::shared_ptr<param_t> ParamsTypePtr;
-    typedef boost::shared_ptr<EntryType> EntryTypePtr;
+    typedef std::shared_ptr<param_t> ParamsTypePtr;
+    typedef std::shared_ptr<EntryType> EntryTypePtr;
 
     struct SerializedEntry;
 
@@ -511,6 +508,8 @@ private:
 
     // When set these are used for fast search of a free tile
     TileCacheFileWPtr _nextAvailableCacheFile;
+
+    // better to use std::optional<size_t> !
     int _nextAvailableCacheFileIndex;
 public:
 
@@ -546,7 +545,7 @@ public:
         , _nextAvailableCacheFile()
         , _nextAvailableCacheFileIndex(-1)
     {
-        _signalEmitter = boost::make_shared<CacheSignalEmitter>();
+        _signalEmitter = std::make_shared<CacheSignalEmitter>();
     }
 
     virtual ~Cache()
@@ -637,8 +636,8 @@ private:
         if (!fileExists(filepath)) {
             return TileCacheFilePtr();
         } else {
-            TileCacheFilePtr ret = boost::make_shared<TileCacheFile>();
-            ret->file = boost::make_shared<MemoryFile>(filepath, MemoryFile::eFileOpenModeEnumIfExistsKeepElseFail);
+            TileCacheFilePtr ret = std::make_shared<TileCacheFile>();
+            ret->file = std::make_shared<MemoryFile>(filepath, MemoryFile::eFileOpenModeEnumIfExistsKeepElseFail);
             std::size_t nTilesPerFile = std::floor( ( (double)NATRON_TILE_CACHE_FILE_SIZE_BYTES ) / _tileByteSize );
             ret->usedTiles.resize(nTilesPerFile, false);
             int index = dataOffset / _tileByteSize;
@@ -706,12 +705,12 @@ private:
 
         if (!foundAvailableFile) {
             // Create a file if all space is taken
-            foundAvailableFile = boost::make_shared<TileCacheFile>();
+            foundAvailableFile = std::make_shared<TileCacheFile>();
             int nCacheFiles = (int)_cacheFiles.size();
             std::stringstream cacheFilePathSs;
             cacheFilePathSs << getCachePath().toStdString() << "/CachePart" << nCacheFiles;
             std::string cacheFilePath = cacheFilePathSs.str();
-            foundAvailableFile->file = boost::make_shared<MemoryFile>(cacheFilePath, MemoryFile::eFileOpenModeEnumIfExistsKeepElseCreate);
+            foundAvailableFile->file = std::make_shared<MemoryFile>(cacheFilePath, MemoryFile::eFileOpenModeEnumIfExistsKeepElseCreate);
 
             std::size_t nTilesPerFile = std::floor(((double)NATRON_TILE_CACHE_FILE_SIZE_BYTES) / _tileByteSize);
             std::size_t cacheFileSize = nTilesPerFile * _tileByteSize;
@@ -745,11 +744,11 @@ private:
         if (foundTileFile == _cacheFiles.end()) {
             return;
         }
-        int index = dataOffset / _tileByteSize;
+        size_t index = dataOffset / _tileByteSize;
 
         // The dataOffset should be a multiple of the tile size
         assert(_tileByteSize * index == dataOffset);
-        assert(index >= 0 && index < (int)(*foundTileFile)->usedTiles.size());
+        assert(index >= 0 && index < (*foundTileFile)->usedTiles.size());
         assert((*foundTileFile)->usedTiles[index]);
         (*foundTileFile)->usedTiles[index] = false;
 

@@ -30,11 +30,6 @@
 
 #include <list>
 
-#if !defined(Q_MOC_RUN) && !defined(SBK_RUN)
-#include <boost/shared_ptr.hpp>
-#include <boost/scoped_ptr.hpp>
-#endif
-
 CLANG_DIAG_OFF(deprecated)
 CLANG_DIAG_OFF(uninitialized)
 #include <QtCore/QCoreApplication>
@@ -186,7 +181,7 @@ public:
         }
     };
 
-    typedef boost::shared_ptr<OfxHostTLSData> OfxHostDataTLSPtr;
+    typedef std::shared_ptr<OfxHostTLSData> OfxHostDataTLSPtr;
 
     OfxHostDataTLSPtr getTLSData() const;
 
@@ -198,7 +193,7 @@ private:
 
     // get the virtuals for viewport size, pixel scale, background colour
     const std::string &getStringProperty(const std::string &name, int n) const OFX_EXCEPTION_SPEC OVERRIDE;
-    boost::scoped_ptr<OfxHostPrivate> _imp;
+    std::unique_ptr<OfxHostPrivate> _imp;
 };
 
 NATRON_NAMESPACE_EXIT

@@ -29,12 +29,7 @@
 #include "Global/Macros.h"
 
 #include <map>
-
-#if !defined(Q_MOC_RUN) && !defined(SBK_RUN)
-#include <boost/shared_ptr.hpp>
-#include <boost/scoped_ptr.hpp>
-#include <boost/weak_ptr.hpp>
-#endif
+#include <memory>
 
 CLANG_DIAG_OFF(deprecated)
 CLANG_DIAG_OFF(uninitialized)
@@ -70,7 +65,7 @@ public:
 };
 
 typedef KnobPageGuiPtr KnobPageGuiPtr;
-typedef std::map<KnobPageWPtr, KnobPageGuiPtr> PagesMap;
+typedef std::map<KnobPageWPtr, KnobPageGuiPtr, std::owner_less<KnobPageWPtr> > PagesMap;
 
 /**
  * @brief Helper class to handle signal/slots so we do not make KnobGuiContainerHelper inherit QObject.
@@ -347,7 +342,7 @@ private:
     void onDeleteCurCmdLater();
 
     friend class KnobGuiContainerSignalsHandler;
-    boost::scoped_ptr<KnobGuiContainerHelperPrivate> _imp;
+    std::unique_ptr<KnobGuiContainerHelperPrivate> _imp;
 };
 
 NATRON_NAMESPACE_EXIT

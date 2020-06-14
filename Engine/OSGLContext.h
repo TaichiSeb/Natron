@@ -28,10 +28,7 @@
 
 #include "Global/Macros.h"
 
-#if !defined(Q_MOC_RUN) && !defined(SBK_RUN)
-#include <boost/scoped_ptr.hpp>
-#include <boost/weak_ptr.hpp>
-#endif
+#include <memory>
 
 //========================================================================
 // GLFW 3.2 - www.glfw.org
@@ -64,11 +61,6 @@
 #include <string>
 #include <vector>
 #include <list>
-
-
-#if !defined(Q_MOC_RUN) && !defined(SBK_RUN)
-#include <boost/noncopyable.hpp>
-#endif
 
 #include "Engine/EngineFwd.h"
 #include "Global/GLIncludes.h"
@@ -143,7 +135,6 @@ public:
  **/
 struct OSGLContextPrivate;
 class OSGLContext
-    : public boost::noncopyable
 {
 public:
 
@@ -160,6 +151,9 @@ public:
                          bool coreProfile = false);
 
     virtual ~OSGLContext();
+    OSGLContext(const OSGLContext&) = delete;
+    OSGLContext& operator=(const OSGLContext&) = delete;
+
 
     /**
      * @brief This function checks that the context has at least the OpenGL version required by Natron, otherwise
@@ -221,7 +215,7 @@ private:
 
 
     friend class OSGLContextAttacher;
-    boost::scoped_ptr<OSGLContextPrivate> _imp;
+    std::unique_ptr<OSGLContextPrivate> _imp;
 };
 
 

@@ -38,8 +38,11 @@ run-without-python {
     # from <https://docs.python.org/3/c-api/intro.html#include-files>:
     # "Since Python may define some pre-processor definitions which affect the standard headers on some systems, you must include Python.h before any standard headers are included."
     CONFIG += python
-    QMAKE_CFLAGS += -include Python.h
-    QMAKE_CXXFLAGS += -include Python.h
+
+    !win32-msvc* {
+      QMAKE_CFLAGS += -include Python.h
+      QMAKE_CXXFLAGS += -include Python.h
+    }
 }
 
 *g++* | *clang* | *xcode* {
@@ -360,6 +363,9 @@ win32-msvc* {
     }
     #System library is required on windows to map network share names from drive letters
     LIBS += mpr.lib
+
+    #force definition of math constants
+    DEFINES += _USE_MATH_DEFINES
 }
 
 
@@ -383,8 +389,7 @@ win32-g++ {
     }
     python:    PKGCONFIG += python-2.7
     boost:     LIBS += -lboost_serialization-mt
-    boost:     LIBS += -lboost_serialization-mt
-	
+
     #See http://stackoverflow.com/questions/16596876/object-file-has-too-many-sections
     Debug:	QMAKE_CXXFLAGS += -Wa,-mbig-obj
 }

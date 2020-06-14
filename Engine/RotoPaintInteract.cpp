@@ -103,7 +103,7 @@ struct RotoPaintInteract::MakeSharedEnabler: public RotoPaintInteract
 RotoPaintInteractPtr
 RotoPaintInteract::create(RotoPaintPrivate* p)
 {
-    return boost::make_shared<RotoPaintInteract::MakeSharedEnabler>(p);
+    return std::make_shared<RotoPaintInteract::MakeSharedEnabler>(p);
 }
 
 
@@ -755,7 +755,7 @@ RotoPaintInteract::onToolChangedInternal(const KnobButtonPtr& actionButton)
     selectedToolAction = actionButton;
     {
         KnobIPtr parentKnob = actionButton->getParentKnob();
-        KnobGroupPtr parentGroup = boost::dynamic_pointer_cast<KnobGroup>(parentKnob);
+        KnobGroupPtr parentGroup = std::dynamic_pointer_cast<KnobGroup>(parentKnob);
         assert(parentGroup);
         selectedToolRole = parentGroup;
     }
@@ -787,7 +787,7 @@ RotoPaintInteract::setCurrentTool(const KnobButtonPtr& tool)
         return;
     }
     KnobIPtr parentKnob = tool->getParentKnob();
-    KnobGroupPtr parentGroup = boost::dynamic_pointer_cast<KnobGroup>(parentKnob);
+    KnobGroupPtr parentGroup = std::dynamic_pointer_cast<KnobGroup>(parentKnob);
     assert(parentGroup);
     if (!parentGroup) {
         return;
@@ -1697,7 +1697,7 @@ RotoPaintInteract::smoothSelectedCurve()
         }
     } else {
         for (SelectedItems::const_iterator it = selectedItems.begin(); it != selectedItems.end(); ++it) {
-            BezierPtr bezier = boost::dynamic_pointer_cast<Bezier>(*it);
+            BezierPtr bezier = std::dynamic_pointer_cast<Bezier>(*it);
             if (bezier) {
                 SmoothCuspUndoCommand::SmoothCuspCurveData data;
                 data.curve = bezier;
@@ -1739,7 +1739,7 @@ RotoPaintInteract::cuspSelectedCurve()
         }
     } else {
         for (SelectedItems::const_iterator it = selectedItems.begin(); it != selectedItems.end(); ++it) {
-            BezierPtr bezier = boost::dynamic_pointer_cast<Bezier>(*it);
+            BezierPtr bezier = std::dynamic_pointer_cast<Bezier>(*it);
             if (bezier) {
                 SmoothCuspUndoCommand::SmoothCuspCurveData data;
                 data.curve = bezier;
@@ -1776,7 +1776,7 @@ RotoPaintInteract::removeFeatherForSelectedCurve()
         }
     } else {
         for (SelectedItems::const_iterator it = selectedItems.begin(); it != selectedItems.end(); ++it) {
-            BezierPtr bezier = boost::dynamic_pointer_cast<Bezier>(*it);
+            BezierPtr bezier = std::dynamic_pointer_cast<Bezier>(*it);
             if (bezier) {
                 RemoveFeatherUndoCommand::RemoveFeatherData data;
                 data.curve = bezier;
@@ -1821,7 +1821,7 @@ RotoPaintInteract::moveSelectedCpsWithKeyArrows(int x,
         points = selectedCps;
     } else {
         for (SelectedItems::const_iterator it = selectedItems.begin(); it != selectedItems.end(); ++it) {
-            BezierPtr bezier = boost::dynamic_pointer_cast<Bezier>(*it);
+            BezierPtr bezier = std::dynamic_pointer_cast<Bezier>(*it);
             if (bezier) {
                 const std::list<BezierCPPtr> & cps = bezier->getControlPoints();
                 const std::list<BezierCPPtr> & fps = bezier->getFeatherPoints();
@@ -1857,8 +1857,8 @@ void
 RotoPaintInteract::onCurveLockedChangedRecursive(const RotoItemPtr & item,
                                                  bool* ret)
 {
-    BezierPtr b = boost::dynamic_pointer_cast<Bezier>(item);
-    RotoLayerPtr layer = boost::dynamic_pointer_cast<RotoLayer>(item);
+    BezierPtr b = std::dynamic_pointer_cast<Bezier>(item);
+    RotoLayerPtr layer = std::dynamic_pointer_cast<RotoLayer>(item);
 
     if (b) {
         if ( item->isLockedRecursive() ) {

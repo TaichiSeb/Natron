@@ -54,11 +54,10 @@ static bool fileExists(const std::string& path)
 static bool dirExists(const std::string& path)
 {
 #ifdef _MSC_VER
-    char* pathCpy = strcpy(path.c_str());
-    strcat(path.c_str(), "\\*");
+    std::wstring pathCopy(path.begin(), path.end());
+    pathCopy.append(L"\\*");
     WIN32_FIND_DATA find_data;
-    HANDLE h = FindFirstFile(pathCpy, &find_data);
-    pathCpy[strlen(pathCpy) - 2] = '\0';
+    HANDLE h = FindFirstFile(pathCopy.c_str(), &find_data);
     if (h == INVALID_HANDLE_VALUE) {
         return false;
     }

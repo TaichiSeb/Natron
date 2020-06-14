@@ -42,6 +42,7 @@
 #include "Engine/AppInstance.h"
 #include "Engine/TimeLine.h"
 
+#include <QWindow>
 
 NATRON_NAMESPACE_ENTER
 
@@ -196,7 +197,7 @@ double
 CustomParamInteract::getScreenPixelRatio() const
 {
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
-    return windowHandle()->devicePixelRatio()
+    return windowHandle()->devicePixelRatio();
 #else
     return 1.;
 #endif

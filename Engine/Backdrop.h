@@ -30,10 +30,6 @@
 
 #include <string>
 
-#if !defined(Q_MOC_RUN) && !defined(SBK_RUN)
-#include <boost/scoped_ptr.hpp>
-#endif
-
 #include "Engine/NoOpBase.h"
 #include "Engine/EngineFwd.h"
 
@@ -92,7 +88,7 @@ private:
                              double /*time*/,
                              bool /*originatedFromMainThread*/) OVERRIDE FINAL;
     virtual void initializeKnobs() OVERRIDE FINAL;
-    boost::scoped_ptr<BackdropPrivate> _imp;
+    std::unique_ptr<BackdropPrivate> _imp;
 };
 
 NATRON_NAMESPACE_EXIT

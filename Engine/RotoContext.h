@@ -32,12 +32,6 @@
 #include <set>
 #include <string>
 
-#if !defined(Q_MOC_RUN) && !defined(SBK_RUN)
-#include <boost/scoped_ptr.hpp>
-#include <boost/shared_ptr.hpp>
-#include <boost/enable_shared_from_this.hpp>
-#endif
-
 CLANG_DIAG_OFF(deprecated-declarations)
 #include <QtCore/QObject>
 #include <QtCore/QMutex>
@@ -92,7 +86,7 @@ struct RotoContextPrivate;
 
 class RotoContext
     : public QObject
-    , public boost::enable_shared_from_this<RotoContext>
+    , public std::enable_shared_from_this<RotoContext>
 {
     Q_OBJECT
 
@@ -463,7 +457,7 @@ private:
     void removeItemRecursively(const RotoItemPtr& item, RotoItem::SelectionReasonEnum reason);
 
 
-    boost::scoped_ptr<RotoContextPrivate> _imp;
+    std::unique_ptr<RotoContextPrivate> _imp;
 };
 
 NATRON_NAMESPACE_EXIT

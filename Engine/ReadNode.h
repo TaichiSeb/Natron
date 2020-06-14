@@ -28,10 +28,7 @@
 
 #include "Global/Macros.h"
 
-#if !defined(Q_MOC_RUN) && !defined(SBK_RUN)
-#include <boost/shared_ptr.hpp>
-#include <boost/scoped_ptr.hpp>
-#endif
+#include <memory>
 
 #include "Engine/EffectInstance.h"
 
@@ -161,7 +158,7 @@ private:
                                       ViewIdx view,
                                       RoIMap* ret) OVERRIDE FINAL;
     virtual FramesNeededMap getFramesNeeded(double time, ViewIdx view) OVERRIDE WARN_UNUSED_RETURN;
-    boost::scoped_ptr<ReadNodePrivate> _imp;
+    std::unique_ptr<ReadNodePrivate> _imp;
 };
 
 NATRON_NAMESPACE_EXIT

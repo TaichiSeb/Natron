@@ -107,37 +107,42 @@ win32-msvc* {
 }
 
 glog-flags {
-CONFIG += gflags-flags
-DEFINES += GOOGLE_GLOG_DLL_DECL=
-INCLUDEPATH += $$PWD/libs/gflags
-INCLUDEPATH += $$PWD/libs/gflags/src
-INCLUDEPATH += $$PWD/libs/gflags/src/gflags
-INCLUDEPATH += $$PWD/libs/glog/src
-win32* {
+  CONFIG += gflags-flags gflags-is-exporting-symbols-flags
+  DEFINES += GOOGLE_GLOG_DLL_DECL=
+  INCLUDEPATH += $$PWD/libs/gflags
+  INCLUDEPATH += $$PWD/libs/gflags/src
+  INCLUDEPATH += $$PWD/libs/gflags/src/gflags
+  win32* {
      INCLUDEPATH += $$PWD/libs/glog/src/windows
-
     # wingdi.h defines ERROR to be 0. When we call LOG(ERROR), it gets
     # substituted with 0, and it expands to COMPACT_GOOGLE_LOG_0. To allow us
     # to keep using this syntax, we define this macro to do the same thing
     # as COMPACT_GOOGLE_LOG_ERROR.
      DEFINES += GLOG_NO_ABBREVIATED_SEVERITIES
-}
-!win32* {
+  }
+  !win32* {
     INCLUDEPATH += $$PWD/libs/glog/src
-}
-win32-msvc* {
+  }
+  win32-msvc* {
     CONFIG(64bit) {
         QMAKE_LFLAGS += /MACHINE:X64
     } else {
         QMAKE_LFLAGS += /MACHINE:X86
     }
-}
+  }
 }
 
 gflags-flags {
 INCLUDEPATH += $$PWD/libs/gflags
 INCLUDEPATH += $$PWD/libs/gflags/src
 INCLUDEPATH += $$PWD/libs/gflags/src/gflags
+}
+
+gflags-is-exporting-symbols-flags {
+win32-msvc*{
+  DEFINES += GFLAGS_DLL_DECLARE_FLAG=__declspec(dllexport)
+  DEFINES += GFLAGS_DLL_DECL=__declspec(dllexport)
+}
 }
 
 libtess-flags {
@@ -501,8 +506,8 @@ DEPENDPATH += $$OUT_PWD/../libs/qhttpserver/src
 
 win32-msvc*{
         CONFIG(64bit) {
-                CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../libs/qhttpserver/build/x64/release/ -lqhttpserver
-                CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../libs/qhttpserver/build/x64/debug/ -lqhttpserver
+                CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../libs/qhttpserver/build/ -lqhttpserver
+                CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../libs/qhttpserver/build/ -lqhttpserver
         } else {
                 CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../libs/qhttpserver/build/win32/release/ -lqhttpserver
                 CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../libs/qhttpserver/build/win32/debug/ -lqhttpserver
@@ -544,8 +549,8 @@ DEPENDPATH += $$OUT_PWD/../libs/hoedown
 
 win32-msvc*{
         CONFIG(64bit) {
-                CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../libs/hoedown/build/x64/release/ -lhoedown
-                CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../libs/hoedown/build/x64/debug/ -lhoedown
+                CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../libs/hoedown/build/ -lhoedown
+                CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../libs/hoedown/build/ -lhoedown
         } else {
                 CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../libs/hoedown/build/win32/release/ -lhoedown
                 CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../libs/hoedown/build/win32/debug/ -lhoedown

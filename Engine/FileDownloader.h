@@ -28,8 +28,6 @@
 
 #include "Global/Macros.h"
 
-#include <boost/scoped_ptr.hpp>
-
 CLANG_DIAG_OFF(deprecated-register) //'register' storage class specifier is deprecated
 #include <QtCore/QObject>
 CLANG_DIAG_ON(deprecated-register)
@@ -88,9 +86,9 @@ public Q_SLOTS:
 private:
 
     QNetworkReply* m_reply;
-    boost::scoped_ptr<QNetworkAccessManager> m_WebCtrl;
-    boost::scoped_ptr<QByteArray> m_DownloadedData;
-    boost::scoped_ptr<QTimer> m_timer;
+    std::unique_ptr<QNetworkAccessManager> m_WebCtrl;
+    std::unique_ptr<QByteArray> m_DownloadedData;
+    std::unique_ptr<QTimer> m_timer;
 };
 
 NATRON_NAMESPACE_EXIT

@@ -33,8 +33,7 @@
 #include <cassert>
 #include <stdexcept>
 #include <sstream> // stringstream
-
-#include <boost/scoped_ptr.hpp>
+#include <memory>
 
 #include <QtCore/QThreadPool>
 #include <QtCore/QReadWriteLock>
@@ -199,7 +198,7 @@ EffectInstance::convertPlanesFormatsIfNeeded(const AppInstancePtr& app,
                                 inputImage->getFieldingOrder(),
                                 false) );
 #else
-        ImagePtr tmp = boost::make_shared<Image>(targetComponents,
+        ImagePtr tmp = std::make_shared<Image>(targetComponents,
                                                  inputImage->getRoD(),
                                                  bounds,
                                                  inputImage->getMipMapLevel(),
@@ -351,7 +350,7 @@ EffectInstance::renderRoI(const RenderRoIArgs & args,
     if ( tls->frameArgs.empty() ) {
         qDebug() << QThread::currentThread() << "[BUG]:" << getScriptName_mt_safe().c_str() <<  "Thread-storage for the render of the frame was not set.";
 
-        frameArgs = boost::make_shared<ParallelRenderArgs>();
+        frameArgs = std::make_shared<ParallelRenderArgs>();
         {
             NodesWList outputs;
             getNode()->getOutputs_mt_safe(outputs);
@@ -458,7 +457,7 @@ EffectInstance::renderRoI(const RenderRoIArgs & args,
     }
 
     ///Determine needed planes
-    ComponentsNeededMapPtr neededComps = boost::make_shared<ComponentsNeededMap>();
+    ComponentsNeededMapPtr neededComps = std::make_shared<ComponentsNeededMap>();
     ComponentsNeededMap::iterator foundOutputNeededComps;
     std::bitset<4> processChannels;
     std::list<ImagePlaneDesc> passThroughPlanes;
@@ -527,7 +526,7 @@ EffectInstance::renderRoI(const RenderRoIArgs & args,
 
                     // If  the requested component is not present, then it will just return black and transparent to the plug-in.
                     if (foundEquivalent != passThroughPlanes.end()) {
-                        boost::scoped_ptr<RenderRoIArgs> inArgs ( new RenderRoIArgs(args) );
+                        std::unique_ptr<RenderRoIArgs> inArgs ( new RenderRoIArgs(args) );
                         inArgs->preComputedRoD.clear();
                         inArgs->components.clear();
                         inArgs->components.push_back(*foundEquivalent);
@@ -608,7 +607,7 @@ EffectInstance::renderRoI(const RenderRoIArgs & args,
                 // be safe in release mode otherwise we hit an infinite recursion
                 if ( (inputTimeIdentity != args.time) || (viewInvariance == eViewInvarianceAllViewsInvariant) ) {
                     ///This special value of -2 indicates that the plugin is identity of itself at another time
-                    boost::scoped_ptr<RenderRoIArgs> argCpy ( new RenderRoIArgs(args) );
+                    std::unique_ptr<RenderRoIArgs> argCpy ( new RenderRoIArgs(args) );
                     argCpy->time = inputTimeIdentity;
 
                     if (viewInvariance == eViewInvarianceAllViewsInvariant) {
@@ -639,7 +638,7 @@ EffectInstance::renderRoI(const RenderRoIArgs & args,
                 }
 
 
-                boost::scoped_ptr<RenderRoIArgs> inputArgs ( new RenderRoIArgs(args) );
+                std::unique_ptr<RenderRoIArgs> inputArgs ( new RenderRoIArgs(args) );
                 inputArgs->time = inputTimeIdentity;
                 inputArgs->view = inputIdentityView;
 
@@ -723,7 +722,7 @@ EffectInstance::renderRoI(const RenderRoIArgs & args,
         // At this point, if only the pass through planes are view variant and the rendered view is different than 0,
         // just call renderRoI again for the components left to render on the view 0.
         if ( (args.view != 0) && (viewInvariance == eViewInvarianceOnlyPassThroughPlanesVariant) ) {
-            boost::scoped_ptr<RenderRoIArgs> argCpy( new RenderRoIArgs(args) );
+            std::unique_ptr<RenderRoIArgs> argCpy( new RenderRoIArgs(args) );
             argCpy->view = ViewIdx(0);
             argCpy->preComputedRoD.clear();
 
@@ -743,7 +742,7 @@ EffectInstance::renderRoI(const RenderRoIArgs & args,
         SettingsPtr settings = appPTR->getCurrentSettings();
         useTransforms = settings && settings->isTransformConcatenationEnabled();
         if (useTransforms) {
-            tls->currentRenderArgs.transformRedirections = boost::make_shared<InputMatrixMap>();
+            tls->currentRenderArgs.transformRedirections = std::make_shared<InputMatrixMap>();
             tryConcatenateTransforms( args.time, frameArgs->draftMode, args.view, args.scale, tls->currentRenderArgs.transformRedirections.get() );
         }
     }
@@ -828,7 +827,7 @@ EffectInstance::renderRoI(const RenderRoIArgs & args,
            since we do not use the cache for textures)
          */
         // Make the OpenGL context current to this thread
-        glContextLocker = boost::make_shared<OSGLContextAttacher>(glContext, abortInfo
+        glContextLocker = std::make_shared<OSGLContextAttacher>(glContext, abortInfo
 #ifdef DEBUG
                                                                   , frameArgs->time
 #endif
@@ -901,7 +900,7 @@ EffectInstance::renderRoI(const RenderRoIArgs & args,
         renderScaleOneUpstreamIfRenderScaleSupportDisabled = true;
     }
 
-    boost::scoped_ptr<ImageKey> key( new ImageKey(getNode().get(),
+    std::unique_ptr<ImageKey> key( new ImageKey(getNode().get(),
                                                   nodeHash,
                                                   isFrameVaryingOrAnimated,
                                                   args.time,
@@ -909,7 +908,7 @@ EffectInstance::renderRoI(const RenderRoIArgs & args,
                                                   1.,
                                                   draftModeSupported && frameArgs->draftMode,
                                                   renderMappedMipMapLevel == 0 && !renderScaleOneUpstreamIfRenderScaleSupportDisabled) );
-    boost::scoped_ptr<ImageKey> nonDraftKey( new ImageKey(getNode().get(),
+    std::unique_ptr<ImageKey> nonDraftKey( new ImageKey(getNode().get(),
                                                           nodeHash,
                                                           isFrameVaryingOrAnimated,
                                                           args.time,
@@ -927,9 +926,9 @@ EffectInstance::renderRoI(const RenderRoIArgs & args,
     ImageBitDepthEnum outputDepth = getBitDepth(-1);
     ImagePlaneDesc outputClipPrefComps, outputClipPrefCompsPaired;
     getMetadataComponents(-1, &outputClipPrefComps, &outputClipPrefCompsPaired);
-    ImagePlanesToRenderPtr planesToRender = boost::make_shared<ImagePlanesToRender>();
+    ImagePlanesToRenderPtr planesToRender = std::make_shared<ImagePlanesToRender>();
     planesToRender->useOpenGL = storage == eStorageModeGLTex;
-    FramesNeededMapPtr framesNeeded = boost::make_shared<FramesNeededMap>();
+    FramesNeededMapPtr framesNeeded = std::make_shared<FramesNeededMap>();
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////////// Look-up the cache ///////////////////////////////////////////////////////////////
 
@@ -1124,7 +1123,7 @@ EffectInstance::renderRoI(const RenderRoIArgs & args,
     }
 
 #if NATRON_ENABLE_TRIMAP
-    boost::scoped_ptr<ImageBitMapMarker_RAII> guard;
+    std::unique_ptr<ImageBitMapMarker_RAII> guard;
 #endif
 
     if (!isPlaneCached) {
@@ -1485,7 +1484,7 @@ EffectInstance::renderRoI(const RenderRoIArgs & args,
                 if ( renderFullScaleThenDownscale && (it->second.fullscaleImage->getMipMapLevel() == 0) ) {
                     RectI bounds;
                     rod.toPixelEnclosing(args.mipMapLevel, par, &bounds);
-                    it->second.downscaleImage = boost::make_shared<Image>(*components,
+                    it->second.downscaleImage = std::make_shared<Image>(*components,
                                                                           rod,
                                                                           downscaledImageBounds,
                                                                           args.mipMapLevel,
@@ -1546,7 +1545,7 @@ EffectInstance::renderRoI(const RenderRoIArgs & args,
         ///locks belongs to an instance)
 
 
-        boost::scoped_ptr<QMutexLocker> locker;
+        std::unique_ptr<QMutexLocker> locker;
 
 
         EffectInstancePtr renderInstance;
@@ -1680,7 +1679,7 @@ EffectInstance::renderRoI(const RenderRoIArgs & args,
             // The plug-in can only use GPU or doesn't support GPU
             throw std::runtime_error("Rendering Failed");
         }
-        boost::scoped_ptr<RenderRoIArgs> newArgs( new RenderRoIArgs(args) );
+        std::unique_ptr<RenderRoIArgs> newArgs( new RenderRoIArgs(args) );
         newArgs->allowGPURendering = false;
 
         return renderRoI(*newArgs, outputPlanes);
@@ -1759,7 +1758,7 @@ EffectInstance::renderRoI(const RenderRoIArgs & args,
              !hasSomethingToRender ) {
             assert(it->second.fullscaleImage->getMipMapLevel() == 0);
             if (it->second.downscaleImage == it->second.fullscaleImage) {
-                it->second.downscaleImage = boost::make_shared<Image>(it->second.fullscaleImage->getComponents(),
+                it->second.downscaleImage = std::make_shared<Image>(it->second.fullscaleImage->getComponents(),
                                                                       it->second.fullscaleImage->getRoD(),
                                                                       downscaledImageBounds,
                                                                       args.mipMapLevel,
@@ -1796,7 +1795,7 @@ EffectInstance::renderRoI(const RenderRoIArgs & args,
             if ( args.returnStorage == eStorageModeGLTex && (imageStorage != eStorageModeGLTex) ) {
                 if (!glContextLocker) {
                     // Make the OpenGL context current to this thread since we may use it for convertRAMImageToOpenGLTexture
-                    glContextLocker = boost::make_shared<OSGLContextAttacher>(glContext, abortInfo
+                    glContextLocker = std::make_shared<OSGLContextAttacher>(glContext, abortInfo
 #ifdef DEBUG
                                                                               , frameArgs->time
 #endif
@@ -1913,14 +1912,14 @@ EffectInstance::renderRoIInternal(EffectInstance* self,
     ///Notify the gui we're rendering
     NotifyRenderingStarted_RAIIPtr renderingNotifier;
     if ( !planesToRender->rectsToRender.empty() ) {
-        renderingNotifier = boost::make_shared<NotifyRenderingStarted_RAII>( self->getNode().get() );
+        renderingNotifier = std::make_shared<NotifyRenderingStarted_RAII>( self->getNode().get() );
     }
 
 
 
-    boost::shared_ptr<std::map<NodePtr, ParallelRenderArgsPtr> > tlsCopy;
+    std::shared_ptr<std::map<NodePtr, ParallelRenderArgsPtr> > tlsCopy;
     if (safety == eRenderSafetyFullySafeFrame) {
-        tlsCopy = boost::make_shared<std::map<NodePtr, ParallelRenderArgsPtr> >();
+        tlsCopy = std::make_shared<std::map<NodePtr, ParallelRenderArgsPtr> >();
         /*
          * Since we're about to start new threads potentially, copy all the thread-local storage on all nodes (any node may be involved in
          * expressions, and we need to retrieve the exact local time of render).
@@ -1963,7 +1962,7 @@ EffectInstance::renderRoIInternal(EffectInstance* self,
     if (renderStatus != eRenderingFunctorRetFailed) {
         if ( (safety == eRenderSafetyFullySafeFrame) && (planesToRender->rectsToRender.size() > 1) && !planesToRender->useOpenGL ) {
             QThread* currentThread = QThread::currentThread();
-            boost::scoped_ptr<Implementation::TiledRenderingFunctorArgs> tiledArgs(new Implementation::TiledRenderingFunctorArgs);
+            std::unique_ptr<Implementation::TiledRenderingFunctorArgs> tiledArgs(new Implementation::TiledRenderingFunctorArgs);
             tiledArgs->renderFullScaleThenDownscale = renderFullScaleThenDownscale;
             tiledArgs->isRenderResponseToUserInteraction = isRenderMadeInResponseToUserInteraction;
             tiledArgs->firstFrame = firstFrame;

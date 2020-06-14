@@ -33,11 +33,6 @@
 #include <string>
 #include <utility>
 
-#if !defined(Q_MOC_RUN) && !defined(SBK_RUN)
-#include <boost/scoped_ptr.hpp>
-#include <boost/shared_ptr.hpp>
-#endif
-
 CLANG_DIAG_OFF(deprecated-declarations)
 #include <QtCore/QObject>
 CLANG_DIAG_ON(deprecated-declarations)
@@ -666,7 +661,7 @@ Q_SIGNALS:
 
 private:
 
-    boost::scoped_ptr<BezierPrivate> _imp;
+    std::unique_ptr<BezierPrivate> _imp;
 };
 
 NATRON_NAMESPACE_EXIT

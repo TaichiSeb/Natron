@@ -30,12 +30,6 @@
 
 #include <vector>
 
-#if !defined(Q_MOC_RUN) && !defined(SBK_RUN)
-#include <boost/shared_ptr.hpp>
-#include <boost/scoped_ptr.hpp>
-#include <boost/weak_ptr.hpp>
-#endif
-
 #include <QtCore/QThread>
 #include <QtCore/QMutex>
 
@@ -140,7 +134,7 @@ protected:
      * @brief Must render the frame
      **/
     virtual void renderFrame(int time, const std::vector<ViewIdx>& viewsToRender, bool enableRenderStats) = 0;
-    boost::scoped_ptr<RenderThreadTaskPrivate> _imp;
+    std::unique_ptr<RenderThreadTaskPrivate> _imp;
 };
 
 enum RenderDirectionEnum
@@ -466,7 +460,7 @@ private:
     void stopRenderThreads(int nThreadsToStop);
 
 
-    boost::scoped_ptr<OutputSchedulerThreadPrivate> _imp;
+    std::unique_ptr<OutputSchedulerThreadPrivate> _imp;
 };
 
 
@@ -587,7 +581,7 @@ private:
      * @brief Must be implemented to execute the work of the thread for 1 loop. This function will be called in a infinite loop by the thread
      **/
     virtual ThreadStateEnum threadLoopOnce(const GenericThreadStartArgsPtr& inArgs) OVERRIDE FINAL WARN_UNUSED_RETURN;
-    boost::scoped_ptr<ViewerCurrentFrameRequestSchedulerPrivate> _imp;
+    std::unique_ptr<ViewerCurrentFrameRequestSchedulerPrivate> _imp;
 };
 
 class ViewerArgs;
@@ -861,7 +855,7 @@ private:
     void notifyFrameProduced(const BufferableObjectPtrList& frames, const RenderStatsPtr& stats, const ViewerCurrentFrameRequestSchedulerStartArgsPtr& request);
 
 
-    boost::scoped_ptr<RenderEnginePrivate> _imp;
+    std::unique_ptr<RenderEnginePrivate> _imp;
 };
 
 class ViewerRenderEngine

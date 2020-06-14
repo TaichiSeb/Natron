@@ -30,11 +30,7 @@
 
 #include <list>
 #include <set>
-
-#if !defined(Q_MOC_RUN) && !defined(SBK_RUN)
-#include <boost/scoped_ptr.hpp>
-#include <boost/shared_ptr.hpp>
-#endif
+#include <memory>
 
 CLANG_DIAG_OFF(deprecated)
 CLANG_DIAG_OFF(uninitialized)
@@ -289,7 +285,7 @@ public:
 private:
     void quitAnyProcessingInternal(bool blocking);
 
-    boost::scoped_ptr<NodeCollectionPrivate> _imp;
+    std::unique_ptr<NodeCollectionPrivate> _imp;
 };
 
 
@@ -406,7 +402,7 @@ private:
                              ViewSpec /*view*/,
                              double /*time*/,
                              bool /*originatedFromMainThread*/) OVERRIDE;
-    boost::scoped_ptr<NodeGroupPrivate> _imp;
+    std::unique_ptr<NodeGroupPrivate> _imp;
 };
 
 NATRON_NAMESPACE_EXIT

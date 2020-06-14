@@ -29,9 +29,7 @@
 
 #include "Global/Macros.h"
 
-#if !defined(Q_MOC_RUN) && !defined(SBK_RUN)
-#include <boost/scoped_ptr.hpp>
-#endif
+#include <memory>
 
 #include "Engine/EngineFwd.h"
 
@@ -92,7 +90,7 @@ public:
 private:
 
 
-    boost::scoped_ptr<GPUContextPoolPrivate> _imp;
+    std::unique_ptr<GPUContextPoolPrivate> _imp;
 };
 
 NATRON_NAMESPACE_EXIT

@@ -35,13 +35,6 @@
 #include <QtCore/QLineF>
 #include <QtCore/QDebug>
 
-GCC_DIAG_UNUSED_LOCAL_TYPEDEFS_OFF
-// /usr/local/include/boost/bind/arg.hpp:37:9: warning: unused typedef 'boost_static_assert_typedef_37' [-Wunused-local-typedef]
-#include <boost/bind.hpp>
-#include <boost/shared_ptr.hpp>
-#include <boost/math/special_functions/fpclassify.hpp>
-GCC_DIAG_UNUSED_LOCAL_TYPEDEFS_ON
-
 #include "Engine/AppInstance.h"
 #include "Engine/Bezier.h"
 #include "Engine/BezierSerialization.h"
@@ -123,7 +116,7 @@ RotoLayer::clone(const RotoItem* other)
     if (!isOtherLayer) {
         return;
     }
-    RotoLayerPtr this_shared = boost::dynamic_pointer_cast<RotoLayer>( shared_from_this() );
+    RotoLayerPtr this_shared = std::dynamic_pointer_cast<RotoLayer>( shared_from_this() );
     assert(this_shared);
 
     QMutexLocker l(&itemMutex);
@@ -131,9 +124,9 @@ RotoLayer::clone(const RotoItem* other)
     _imp->items.clear();
     for (std::list<RotoItemPtr>::const_iterator it = isOtherLayer->_imp->items.begin();
          it != isOtherLayer->_imp->items.end(); ++it) {
-        RotoLayerPtr isLayer = boost::dynamic_pointer_cast<RotoLayer>(*it);
-        BezierPtr isBezier = boost::dynamic_pointer_cast<Bezier>(*it);
-        RotoStrokeItemPtr isStroke = boost::dynamic_pointer_cast<RotoStrokeItem>(*it);
+        RotoLayerPtr isLayer = std::dynamic_pointer_cast<RotoLayer>(*it);
+        BezierPtr isBezier = std::dynamic_pointer_cast<Bezier>(*it);
+        RotoStrokeItemPtr isStroke = std::dynamic_pointer_cast<RotoStrokeItem>(*it);
         if (isBezier) {
             BezierPtr copy( new Bezier(*isBezier, this_shared) );
             copy->createNodes();
@@ -174,20 +167,20 @@ RotoLayer::save(RotoItemSerialization *obj) const
     }
 
     for (RotoItems::const_iterator it = items.begin(); it != items.end(); ++it) {
-        BezierPtr isBezier = boost::dynamic_pointer_cast<Bezier>(*it);
-        RotoStrokeItemPtr isStroke = boost::dynamic_pointer_cast<RotoStrokeItem>(*it);
-        RotoLayerPtr layer = boost::dynamic_pointer_cast<RotoLayer>(*it);
+        BezierPtr isBezier = std::dynamic_pointer_cast<Bezier>(*it);
+        RotoStrokeItemPtr isStroke = std::dynamic_pointer_cast<RotoStrokeItem>(*it);
+        RotoLayerPtr layer = std::dynamic_pointer_cast<RotoLayer>(*it);
         RotoItemSerializationPtr childSerialization;
         if (isBezier && !isStroke) {
-            childSerialization = boost::make_shared<BezierSerialization>();
+            childSerialization = std::make_shared<BezierSerialization>();
             isBezier->save( childSerialization.get() );
         } else if (isStroke) {
-            childSerialization = boost::make_shared<RotoStrokeItemSerialization>();
+            childSerialization = std::make_shared<RotoStrokeItemSerialization>();
             isStroke->save( childSerialization.get() );
         } else {
             assert(layer);
             if (layer) {
-                childSerialization = boost::make_shared<RotoLayerSerialization>();
+                childSerialization = std::make_shared<RotoLayerSerialization>();
                 layer->save( childSerialization.get() );
             }
         }
@@ -203,15 +196,15 @@ void
 RotoLayer::load(const RotoItemSerialization &obj)
 {
     const RotoLayerSerialization & s = dynamic_cast<const RotoLayerSerialization &>(obj);
-    RotoLayerPtr this_layer = boost::dynamic_pointer_cast<RotoLayer>( shared_from_this() );
+    RotoLayerPtr this_layer = std::dynamic_pointer_cast<RotoLayer>( shared_from_this() );
 
     assert(this_layer);
     RotoItem::load(obj);
     {
         for (std::list<RotoItemSerializationPtr>::const_iterator it = s.children.begin(); it != s.children.end(); ++it) {
-            BezierSerializationPtr b = boost::dynamic_pointer_cast<BezierSerialization>(*it);
-            RotoStrokeItemSerializationPtr s = boost::dynamic_pointer_cast<RotoStrokeItemSerialization>(*it);
-            RotoLayerSerializationPtr l = boost::dynamic_pointer_cast<RotoLayerSerialization>(*it);
+            BezierSerializationPtr b = std::dynamic_pointer_cast<BezierSerialization>(*it);
+            RotoStrokeItemSerializationPtr s = std::dynamic_pointer_cast<RotoStrokeItemSerialization>(*it);
+            RotoLayerSerializationPtr l = std::dynamic_pointer_cast<RotoLayerSerialization>(*it);
             if (b && !s) {
                 BezierPtr bezier( new Bezier(getContext(), kRotoBezierBaseName, RotoLayerPtr(), false) );
                 bezier->createNodes(false);
@@ -258,7 +251,7 @@ RotoLayer::addItem(const RotoItemPtr & item,
         parentLayer->removeItem(item);
     }
 
-    item->setParentLayer( boost::dynamic_pointer_cast<RotoLayer>( shared_from_this() ) );
+    item->setParentLayer( std::dynamic_pointer_cast<RotoLayer>( shared_from_this() ) );
     {
         QMutexLocker l(&itemMutex);
         _imp->items.push_back(item);
@@ -286,7 +279,7 @@ RotoLayer::insertItem(const RotoItemPtr & item,
     {
         QMutexLocker l(&itemMutex);
         if (parentLayer.get() != this) {
-            item->setParentLayer( boost::dynamic_pointer_cast<RotoLayer>( shared_from_this() ) );
+            item->setParentLayer( std::dynamic_pointer_cast<RotoLayer>( shared_from_this() ) );
         } else {
             RotoItems::iterator found = std::find(_imp->items.begin(), _imp->items.end(), item);
             if ( found != _imp->items.end() ) {

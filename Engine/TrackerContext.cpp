@@ -27,6 +27,7 @@
 
 #include <set>
 #include <sstream> // stringstream
+#include <chrono>
 
 CLANG_DIAG_OFF(deprecated)
 CLANG_DIAG_OFF(uninitialized)
@@ -72,7 +73,7 @@ TrackerContext::getMotionModelsAndHelps(bool addPerspective,
 }
 
 TrackerContext::TrackerContext(const NodePtr &node)
-    : boost::enable_shared_from_this<TrackerContext>()
+    : std::enable_shared_from_this<TrackerContext>()
     , _imp( new TrackerContextPrivate(this, node) )
 {
 }
@@ -90,7 +91,7 @@ struct TrackerContext::MakeSharedEnabler: public TrackerContext
 TrackerContextPtr
 TrackerContext::create(const NodePtr &node)
 {
-    return boost::make_shared<TrackerContext::MakeSharedEnabler>(node);
+    return std::make_shared<TrackerContext::MakeSharedEnabler>(node);
 }
 
 
@@ -768,7 +769,7 @@ getCornerPinPoint(Node* node,
     QString name = isFrom ? QString::fromUtf8("from%1").arg(index + 1) : QString::fromUtf8("to%1").arg(index + 1);
     KnobIPtr knob = node->getKnobByName( name.toStdString() );
     assert(knob);
-    KnobDoublePtr  ret = boost::dynamic_pointer_cast<KnobDouble>(knob);
+    KnobDoublePtr  ret = std::dynamic_pointer_cast<KnobDouble>(knob);
     assert(ret);
 
     return ret;
@@ -786,7 +787,7 @@ getCornerPinPoint(Node* node,
     QString name = isFrom ? QString::fromUtf8("from%1").arg(index + 1) : QString::fromUtf8("to%1").arg(index + 1);
     KnobIPtr knob = node->getKnobByName( name.toStdString() );
     assert(knob);
-    KnobDoublePtr  ret = boost::dynamic_pointer_cast<KnobDouble>(knob);
+    KnobDoublePtr  ret = std::dynamic_pointer_cast<KnobDouble>(knob);
     assert(ret);
 
     return ret;
@@ -1835,7 +1836,7 @@ NATRON_NAMESPACE_ANONYMOUS_EXIT
 GenericSchedulerThread::ThreadStateEnum
 TrackScheduler::threadLoopOnce(const GenericThreadStartArgsPtr& inArgs)
 {
-    TrackArgsPtr args = boost::dynamic_pointer_cast<TrackArgs>(inArgs);
+    TrackArgsPtr args = std::dynamic_pointer_cast<TrackArgs>(inArgs);
 
     assert(args);
 
@@ -1869,8 +1870,15 @@ TrackScheduler::threadLoopOnce(const GenericThreadStartArgsPtr& inArgs)
     int lastValidFrame = frameStep > 0 ? start - 1 : start + 1;
     bool reportProgress = numTracks > 1 || framesCount > 1;
     EffectInstancePtr effect = _imp->getNode()->getEffectInstance();
+
     timeval lastProgressUpdateTime;
-    gettimeofday(&lastProgressUpdateTime, 0);
+    //gettimeofday(&lastProgressUpdateTime, 0);
+
+    const auto now = std::chrono::system_clock::now();
+    const auto millisecs = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch());
+
+    lastProgressUpdateTime.tv_sec = millisecs.count() / 1000;
+    lastProgressUpdateTime.tv_usec = (millisecs.count() % 1000) * 1000;
 
     bool allTrackFailed = false;
     {
@@ -1927,7 +1935,13 @@ TrackScheduler::threadLoopOnce(const GenericThreadStartArgsPtr& inArgs)
             bool enoughTimePassedToReportProgress;
             {
                 timeval now;
-                gettimeofday(&now, 0);
+                //gettimeofday(&now, 0);
+                const auto chrono_now = std::chrono::system_clock::now();
+                const auto millisecs = std::chrono::duration_cast<std::chrono::milliseconds>(chrono_now.time_since_epoch());
+
+                now.tv_sec = millisecs.count() / 1000;
+                now.tv_usec = (millisecs.count() % 1000) * 1000;
+
                 double dt =  now.tv_sec  - lastProgressUpdateTime.tv_sec +
                             (now.tv_usec - lastProgressUpdateTime.tv_usec) * 1e-6f;
                 dt *= 1000; // switch to MS

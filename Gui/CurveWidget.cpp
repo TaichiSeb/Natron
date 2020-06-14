@@ -36,6 +36,7 @@ GCC_DIAG_UNUSED_PRIVATE_FIELD_ON
 #include <QtCore/QTextStream>
 #include <QtCore/QThread>
 #include <QApplication>
+#include <QWindow>
 #include <QToolButton>
 #include <QDesktopWidget>
 
@@ -472,7 +473,7 @@ CurveWidget::getScreenPixelRatio() const
     assert( qApp && qApp->thread() == QThread::currentThread() );
 
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
-    return windowHandle()->devicePixelRatio()
+    return windowHandle()->devicePixelRatio();
 #else
     return 1.;
 #endif

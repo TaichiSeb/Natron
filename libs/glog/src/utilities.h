@@ -151,7 +151,7 @@ const char* ProgramInvocationShortName();
 
 bool IsGoogleLoggingInitialized();
 
-bool is_default_thread();
+//bool is_default_thread();
 
 int64 CycleClock_Now();
 

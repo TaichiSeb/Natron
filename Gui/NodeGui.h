@@ -33,13 +33,7 @@
 #include <list>
 #include <vector>
 #include <utility>
-
-#if !defined(Q_MOC_RUN) && !defined(SBK_RUN)
-#include <boost/shared_ptr.hpp>
-#include <boost/scoped_ptr.hpp>
-#include <boost/weak_ptr.hpp>
-#include <boost/enable_shared_from_this.hpp>
-#endif
+#include <memory>
 
 CLANG_DIAG_OFF(deprecated)
 CLANG_DIAG_OFF(uninitialized)
@@ -92,7 +86,7 @@ public:
 
 private:
 
-    boost::scoped_ptr<NodeGuiIndicatorPrivate> _imp;
+    std::unique_ptr<NodeGuiIndicatorPrivate> _imp;
 };
 
 ///A richer text item which allows text alignmenent
@@ -130,7 +124,7 @@ class NodeGui
     : public QObject
       , public QGraphicsItem
       , public NodeGuiI
-      , public boost::enable_shared_from_this<NodeGui>
+      , public std::enable_shared_from_this<NodeGui>
 {
 GCC_DIAG_SUGGEST_OVERRIDE_OFF
     Q_OBJECT
@@ -143,7 +137,7 @@ public:
 
 public:
     // TODO: enable_shared_from_this
-    // constructors should be privatized in any class that derives from boost::enable_shared_from_this<>
+    // constructors should be privatized in any class that derives from std::enable_shared_from_this<>
 
     NodeGui(QGraphicsItem *parent = 0);
 
@@ -667,7 +661,7 @@ private:
         LinkArrow* arrow;
     };
 
-    typedef std::map<NodeWPtr, LinkedDim> KnobGuiLinks;
+    typedef std::map<NodeWPtr, LinkedDim, std::owner_less<NodeWPtr> > KnobGuiLinks;
     KnobGuiLinks _knobsLinks;
     NodeGuiIndicatorPtr _expressionIndicator;
     QPoint _magnecEnabled; //<enabled in X or/and Y

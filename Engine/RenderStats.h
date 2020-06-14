@@ -34,12 +34,6 @@
 #include <string>
 #include <bitset>
 
-#if !defined(Q_MOC_RUN) && !defined(SBK_RUN)
-#include <boost/shared_ptr.hpp>
-#include <boost/scoped_ptr.hpp>
-#include <boost/weak_ptr.hpp>
-#endif
-
 #include "Global/GlobalDefines.h"
 
 #include "Engine/RectI.h"
@@ -102,7 +96,7 @@ public:
 
 private:
 
-    boost::scoped_ptr<NodeRenderStatsPrivate> _imp;
+    std::unique_ptr<NodeRenderStatsPrivate> _imp;
 };
 
 /**
@@ -147,7 +141,7 @@ public:
 
 private:
 
-    boost::scoped_ptr<RenderStatsPrivate> _imp;
+    std::unique_ptr<RenderStatsPrivate> _imp;
 };
 
 NATRON_NAMESPACE_EXIT

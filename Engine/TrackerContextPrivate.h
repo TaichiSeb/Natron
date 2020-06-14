@@ -32,10 +32,6 @@
 
 #include <list>
 
-#if !defined(Q_MOC_RUN) && !defined(SBK_RUN)
-#include <boost/utility.hpp>
-#endif
-
 GCC_DIAG_OFF(unused-function)
 GCC_DIAG_OFF(unused-parameter)
 #if ( ( __GNUC__ * 100) + __GNUC_MINOR__) >= 408
@@ -480,8 +476,8 @@ public:
         double rms;
     };
 
-    typedef boost::shared_ptr<QFutureWatcher<CornerPinData> > CornerPinSolverWatcher;
-    typedef boost::shared_ptr<QFutureWatcher<TransformData> > TransformSolverWatcher;
+    typedef std::shared_ptr<QFutureWatcher<CornerPinData> > CornerPinSolverWatcher;
+    typedef std::shared_ptr<QFutureWatcher<TransformData> > TransformSolverWatcher;
 
     struct SolveRequest
     {

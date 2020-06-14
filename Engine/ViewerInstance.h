@@ -29,11 +29,7 @@
 #include "Global/Macros.h"
 
 #include <string>
-
-#if !defined(Q_MOC_RUN) && !defined(SBK_RUN)
-#include <boost/shared_ptr.hpp>
-#include <boost/scoped_ptr.hpp>
-#endif
+#include <memory>
 
 #include "Engine/OutputEffectInstance.h"
 #include "Engine/ViewIdx.h"
@@ -444,7 +440,7 @@ private:
 
 private:
 
-    boost::scoped_ptr<ViewerInstancePrivate> _imp;
+    std::unique_ptr<ViewerInstancePrivate> _imp;
 };
 
 NATRON_NAMESPACE_EXIT

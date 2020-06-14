@@ -28,12 +28,6 @@
 
 #include "Global/Macros.h"
 
-#if !defined(Q_MOC_RUN) && !defined(SBK_RUN)
-#include <boost/noncopyable.hpp>
-#include <boost/shared_ptr.hpp>
-#include <boost/scoped_ptr.hpp>
-#endif
-
 CLANG_DIAG_OFF(deprecated)
 CLANG_DIAG_OFF(uninitialized)
 #include <QtCore/QtGlobal> // for Q_OS_*
@@ -69,7 +63,6 @@ class Gui
     : public DocumentWindow
 #endif
       , public SerializableWindow
-      , public boost::noncopyable
 {
 GCC_DIAG_SUGGEST_OVERRIDE_OFF
     Q_OBJECT
@@ -83,6 +76,9 @@ public:
                  QWidget* parent = 0);
 
     virtual ~Gui() OVERRIDE;
+
+    Gui(const Gui& app) = delete;
+    Gui& operator=(const Gui&) = delete;
 
     /**
      * @brief Creates the whole gui. Must be called only once after the Gui object has been created.
@@ -719,7 +715,7 @@ private:
     virtual void dragMoveEvent(QDragMoveEvent* e) OVERRIDE FINAL;
     virtual void dragLeaveEvent(QDragLeaveEvent* e) OVERRIDE FINAL;
     virtual void dropEvent(QDropEvent* e) OVERRIDE FINAL;
-    boost::scoped_ptr<GuiPrivate> _imp;
+    std::unique_ptr<GuiPrivate> _imp;
 };
 
 NATRON_NAMESPACE_EXIT

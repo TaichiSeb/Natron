@@ -35,8 +35,7 @@
 #include <utility>
 
 #if !defined(Q_MOC_RUN) && !defined(SBK_RUN)
-#include <boost/scoped_ptr.hpp>
-#include <boost/shared_ptr.hpp>
+#include <boost/serialization/access.hpp>
 #endif
 
 #include "Global/GlobalDefines.h"
@@ -400,7 +399,7 @@ private:
     void onCurveChanged();
 
 private:
-    boost::scoped_ptr<CurvePrivate> _imp;
+    std::unique_ptr<CurvePrivate> _imp;
 };
 
 NATRON_NAMESPACE_EXIT

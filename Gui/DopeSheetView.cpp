@@ -35,6 +35,7 @@
 #include <QScrollBar>
 #include <QtCore/QThread>
 #include <QToolButton>
+#include <QWindow>
 
 // Natron includes
 #include "Engine/Curve.h"
@@ -2104,7 +2105,7 @@ DopeSheetViewPrivate::computeGroupRange(DSNode *group)
             continue;
         }
 
-        NodeGuiPtr nodeGui = boost::dynamic_pointer_cast<NodeGui>( node->getNodeGui() );
+        NodeGuiPtr nodeGui = std::dynamic_pointer_cast<NodeGui>( node->getNodeGui() );
 
         if ( !nodeGui->getSettingPanel() || !nodeGui->isSettingsPanelVisible() ) {
             continue;
@@ -2709,7 +2710,7 @@ double
 DopeSheetView::getScreenPixelRatio() const
 {
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
-    return windowHandle()->devicePixelRatio()
+    return windowHandle()->devicePixelRatio();
 #else
     return 1.;
 #endif

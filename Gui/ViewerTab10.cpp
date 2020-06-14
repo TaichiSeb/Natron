@@ -956,7 +956,7 @@ ViewerTab::eventFilter(QObject *target,
             if (app) {
                 NodeGuiIPtr nodegui_i = _imp->viewerNode->getNode()->getNodeGui();
                 assert(nodegui_i);
-                NodeGuiPtr nodegui = boost::dynamic_pointer_cast<NodeGui>(nodegui_i);
+                NodeGuiPtr nodegui = std::dynamic_pointer_cast<NodeGui>(nodegui_i);
                 if (nodegui) {
                     gui->selectNode(nodegui);
                 }

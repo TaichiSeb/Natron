@@ -106,7 +106,7 @@ DocumentWindow::winEvent(MSG *message,
         break;
     }
 
-    return QMainWindow::winEvent(message, result);
+    return QMainWindow::nativeEvent(QByteArrayLiteral("windows_generic_MSG"), message, result);
 }
 
 void

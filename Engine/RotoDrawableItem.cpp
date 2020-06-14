@@ -37,9 +37,6 @@
 #include <QtCore/QDebug>
 
 GCC_DIAG_UNUSED_LOCAL_TYPEDEFS_OFF
-// /usr/local/include/boost/bind/arg.hpp:37:9: warning: unused typedef 'boost_static_assert_typedef_37' [-Wunused-local-typedef]
-#include <boost/bind.hpp>
-#include <boost/shared_ptr.hpp>
 #include <boost/math/special_functions/fpclassify.hpp>
 GCC_DIAG_UNUSED_LOCAL_TYPEDEFS_ON
 
@@ -135,7 +132,7 @@ RotoDrawableItem::addKnob(const KnobIPtr& knob)
 void
 RotoDrawableItem::setNodesThreadSafetyForRotopainting()
 {
-    assert( boost::dynamic_pointer_cast<RotoStrokeItem>( boost::dynamic_pointer_cast<RotoDrawableItem>( shared_from_this() ) ) );
+    assert( std::dynamic_pointer_cast<RotoStrokeItem>( std::dynamic_pointer_cast<RotoDrawableItem>( shared_from_this() ) ) );
 
     getContext()->getNode()->setRenderThreadSafety(eRenderSafetyInstanceSafe);
     getContext()->setWhileCreatingPaintStrokeOnMergeNodes(true);
@@ -178,9 +175,9 @@ RotoDrawableItem::createNodes(bool connectNodes)
 
     QString pluginId;
     RotoStrokeType type;
-    RotoDrawableItemPtr thisShared = boost::dynamic_pointer_cast<RotoDrawableItem>( shared_from_this() );
+    RotoDrawableItemPtr thisShared = std::dynamic_pointer_cast<RotoDrawableItem>( shared_from_this() );
     assert(thisShared);
-    RotoStrokeItemPtr isStroke = boost::dynamic_pointer_cast<RotoStrokeItem>(thisShared);
+    RotoStrokeItemPtr isStroke = std::dynamic_pointer_cast<RotoStrokeItem>(thisShared);
 
     if (isStroke) {
         type = isStroke->getBrushType();
@@ -909,7 +906,7 @@ RotoDrawableItem::save(RotoItemSerialization *obj) const
         throw std::logic_error("RotoDrawableItem::save()");
     }
     for (std::list<KnobIPtr>::const_iterator it = _imp->knobs.begin(); it != _imp->knobs.end(); ++it) {
-        KnobSerializationPtr k = boost::make_shared<KnobSerialization>(*it);
+        KnobSerializationPtr k = std::make_shared<KnobSerialization>(*it);
         serializeRotoKnob( *it, k.get() );
         s->_knobs.push_back(k);
     }

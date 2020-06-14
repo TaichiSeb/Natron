@@ -74,6 +74,126 @@ GCC_DIAG_ON(unused-parameter)
 #include "Engine/StandardPaths.h"
 
 
+static wchar_t*
+char2wchar(const char* arg)
+{
+    wchar_t* res = nullptr;
+
+#ifdef HAVE_BROKEN_MBSTOWCS
+    /* Some platforms have a broken implementation of
+     * mbstowcs which does not count the characters that
+     * would result from conversion.  Use an upper bound.
+     */
+    size_t argsize = strlen(arg);
+#else
+    size_t argsize = mbstowcs(nullptr, arg, 0);
+#endif
+    size_t count;
+    unsigned char* in;
+    wchar_t* out;
+#ifdef HAVE_MBRTOWC
+    mbstate_t mbs;
+#endif
+    if (argsize != (size_t)-1) {
+        res = (wchar_t*)malloc((argsize + 1) * sizeof(wchar_t));
+        if (!res) {
+            goto oom;
+        }
+        count = mbstowcs(res, arg, argsize + 1);
+        if (count != (size_t)-1) {
+            wchar_t* tmp;
+            /* Only use the result if it contains no
+             surrogate characters. */
+            for (tmp = res; *tmp != 0 &&
+                (*tmp < 0xd800 || *tmp > 0xdfff); tmp++) {
+                ;
+            }
+            if (*tmp == 0) {
+                return res;
+            }
+        }
+        free(res);
+    }
+    /* Conversion failed. Fall back to escaping with surrogateescape. */
+#ifdef HAVE_MBRTOWC
+    /* Try conversion with mbrtwoc (C99), and escape non-decodable bytes. */
+    /* Overallocate; as multi-byte characters are in the argument, the
+     actual output could use less memory. */
+    argsize = strlen(arg) + 1;
+    res = (wchar_t*)malloc(argsize * sizeof(wchar_t));
+    if (!res) {
+        goto oom;
+    }
+    in = (unsigned char*)arg;
+    out = res;
+    std::memset(&mbs, 0, sizeof mbs);
+    while (argsize) {
+        size_t converted = mbrtowc(out, (char*)in, argsize, &mbs);
+        if (converted == 0) {
+            /* Reached end of string; nullptr char stored. */
+            break;
+        }
+        if (converted == (size_t)-2) {
+            /* Incomplete character. This should never happen,
+             since we provide everything that we have -
+             unless there is a bug in the C library, or I
+             misunderstood how mbrtowc works. */
+            fprintf(stderr, "unexpected mbrtowc result -2\n");
+            free(res);
+
+            return nullptr;
+        }
+        if (converted == (size_t)-1) {
+            /* Conversion error. Escape as UTF-8b, and start over
+             in the initial shift state. */
+            *out++ = 0xdc00 + *in++;
+            argsize--;
+            std::memset(&mbs, 0, sizeof mbs);
+            continue;
+        }
+        if ((*out >= 0xd800) && (*out <= 0xdfff)) {
+            /* Surrogate character.  Escape the original
+             byte sequence with surrogateescape. */
+            argsize -= converted;
+            while (converted--) {
+                *out++ = 0xdc00 + *in++;
+            }
+            continue;
+        }
+        /* successfully converted some bytes */
+        in += converted;
+        argsize -= converted;
+        out++;
+    }
+#else
+    /* Cannot use C locale for escaping; manually escape as if charset
+     is ASCII (i.e. escape all bytes > 128. This will still roundtrip
+     correctly in the locale's charset, which must be an ASCII superset. */
+    res = (wchar_t*)malloc((strlen(arg) + 1) * sizeof(wchar_t));
+    if (!res) {
+        goto oom;
+    }
+    in = (unsigned char*)arg;
+    out = res;
+    while (*in) {
+        if (*in < 128) {
+            *out++ = *in++;
+        }
+        else {
+            *out++ = 0xdc00 + *in++;
+        }
+    }
+    *out = 0;
+#endif // ifdef HAVE_MBRTOWC
+
+    return res;
+oom:
+    fprintf(stderr, "out of memory\n");
+    free(res);
+
+    return nullptr;
+} // char2wchar
+
 // Don't forget to update glad.h and glad.c as well when updating these
 #define NATRON_OPENGL_VERSION_REQUIRED_MAJOR 2
 #define NATRON_OPENGL_VERSION_REQUIRED_MINOR 0
@@ -117,7 +237,11 @@ AppManagerPrivate::AppManagerPrivate()
     , nThreadsMutex()
     , runningThreadsCount()
     , lastProjectLoadedCreatedDuringRC2Or3(false)
+#if PY_MAJOR_VERSION >= 3
+    ,commandLineArgsWide()
+#else
     , commandLineArgsUtf8()
+#endif
     , nArgs(0)
     , mainModule(0)
     , mainThreadState(0)
@@ -145,15 +269,14 @@ AppManagerPrivate::AppManagerPrivate()
 
 AppManagerPrivate::~AppManagerPrivate()
 {
-    
-
-    for (std::size_t i = 0; i < commandLineArgsUtf8Original.size(); ++i) {
-        free(commandLineArgsUtf8Original[i]);
-    }
 #if PY_MAJOR_VERSION >= 3
     // Python 3
     for (std::size_t i = 0; i < commandLineArgsWideOriginal.size(); ++i) {
         free(commandLineArgsWideOriginal[i]);
+    }
+#else
+    for (std::size_t i = 0; i < commandLineArgsUtf8Original.size(); ++i) {
+        free(commandLineArgsUtf8Original[i]);
     }
 #endif
 }
@@ -171,7 +294,7 @@ AppManagerPrivate::initBreakpad(const QString& breakpadPipePath,
        We check periodically that the crash reporter process is still alive. If the user killed it somehow, then we want
        the Natron process to terminate
      */
-    breakpadAliveThread = boost::make_shared<ExistenceCheckerThread>(QString::fromUtf8(NATRON_NATRON_TO_BREAKPAD_EXISTENCE_CHECK),
+    breakpadAliveThread = std::make_shared<ExistenceCheckerThread>(QString::fromUtf8(NATRON_NATRON_TO_BREAKPAD_EXISTENCE_CHECK),
                                                                      QString::fromUtf8(NATRON_NATRON_TO_BREAKPAD_EXISTENCE_CHECK_ACK),
                                                                      breakpadComPipePath);
     QObject::connect( breakpadAliveThread.get(), SIGNAL(otherProcessUnreachable()), appPTR, SLOT(onCrashReporterNoLongerResponding()) );
@@ -188,7 +311,7 @@ AppManagerPrivate::createBreakpadHandler(const QString& breakpadPipePath,
     try {
 #if defined(Q_OS_MAC)
         Q_UNUSED(breakpad_client_fd);
-        breakpadHandler = boost::make_shared<google_breakpad::ExceptionHandler>( dumpPath.toStdString(),
+        breakpadHandler = std::make_shared<google_breakpad::ExceptionHandler>( dumpPath.toStdString(),
                                                                                  google_breakpad::ExceptionHandler::FilterCallback(NULL),
                                                                                  google_breakpad::ExceptionHandler::MinidumpCallback(NULL) /*dmpcb*/,
                                                                                  (void*)NULL,
@@ -196,7 +319,7 @@ AppManagerPrivate::createBreakpadHandler(const QString& breakpadPipePath,
                                                                                  breakpadPipePath.toStdString().c_str() );
 #elif defined(Q_OS_LINUX) || defined(Q_OS_FREEBSD)
         Q_UNUSED(breakpadPipePath);
-        breakpadHandler = boost::make_shared<google_breakpad::ExceptionHandler>( google_breakpad::MinidumpDescriptor( dumpPath.toStdString() ),
+        breakpadHandler = std::make_shared<google_breakpad::ExceptionHandler>( google_breakpad::MinidumpDescriptor( dumpPath.toStdString() ),
                                                                                  google_breakpad::ExceptionHandler::FilterCallback(NULL),
                                                                                  google_breakpad::ExceptionHandler::MinidumpCallback(NULL) /*dmpCb*/,
                                                                                  (void*)NULL,
@@ -204,7 +327,7 @@ AppManagerPrivate::createBreakpadHandler(const QString& breakpadPipePath,
                                                                                  breakpad_client_fd);
 #elif defined(Q_OS_WIN32)
         Q_UNUSED(breakpad_client_fd);
-        breakpadHandler = boost::make_shared<google_breakpad::ExceptionHandler>( dumpPath.toStdWString(),
+        breakpadHandler = std::make_shared<google_breakpad::ExceptionHandler>( dumpPath.toStdWString(),
                                                                                  google_breakpad::ExceptionHandler::FilterCallback(NULL), //filter callback
                                                                                  google_breakpad::ExceptionHandler::MinidumpCallback(NULL) /*dmpcb*/,
                                                                                  (void*)NULL, //context
@@ -316,6 +439,11 @@ template <typename T>
 void
 saveCache(Cache<T>* cache)
 {
+    if (nullptr == cache)
+    {
+        return;
+    }
+
     std::string cacheRestoreFilePath = cache->getRestoreFilePath();
     FStreamsSupport::ofstream ofile;
     FStreamsSupport::open(&ofile, cacheRestoreFilePath);
@@ -1011,22 +1139,22 @@ AppManagerPrivate::copyUtf8ArgsToMembers(const std::vector<std::string>& utf8Arg
 #if PY_MAJOR_VERSION >= 3
     // Python 3
     commandLineArgsWideOriginal.resize(utf8Args.size());
-#endif
+#else
     commandLineArgsUtf8Original.resize(utf8Args.size());
+#endif
     nArgs = (int)utf8Args.size();
     for (std::size_t i = 0; i < utf8Args.size(); ++i) {
-        commandLineArgsUtf8Original[i] = strdup(utf8Args[i].c_str());
-
-        // Python 3 needs wchar_t arguments
 #if PY_MAJOR_VERSION >= 3
-        // Python 3
         commandLineArgsWideOriginal[i] = char2wchar(utf8Args[i].c_str());
+#else
+        commandLineArgsUtf8Original[i] = strdup(utf8Args[i].c_str());
 #endif
     }
-    commandLineArgsUtf8 = commandLineArgsUtf8Original;
 #if PY_MAJOR_VERSION >= 3
     // Python 3
     commandLineArgsWide = commandLineArgsWideOriginal;
+#else
+    commandLineArgsUtf8 = commandLineArgsUtf8Original;
 #endif
 }
 

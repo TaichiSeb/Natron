@@ -29,9 +29,6 @@
 #include "Global/Macros.h"
 
 #include <cstddef>
-#if !defined(Q_MOC_RUN) && !defined(SBK_RUN)
-#include <boost/scoped_ptr.hpp>
-#endif
 
 #include "Engine/EngineFwd.h"
 
@@ -71,7 +68,7 @@ public:
 
 private:
     struct Implementation;
-    boost::scoped_ptr<Implementation> _imp; //!< PImpl
+    std::unique_ptr<Implementation> _imp; //!< PImpl
 };
 
 NATRON_NAMESPACE_EXIT

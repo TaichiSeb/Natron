@@ -39,7 +39,7 @@
 NATRON_NAMESPACE_ENTER
 
 /*The output node was connected from inputNumber to this...*/
-typedef std::map<NodeWPtr, int > DeactivatedState;
+typedef std::map<NodeWPtr, int, std::owner_less<NodeWPtr>  > DeactivatedState;
 typedef std::list<Node::KnobLink> KnobLinkList;
 typedef std::vector<NodeWPtr> InputsV;
 
@@ -256,8 +256,14 @@ public:
         , hostChannelSelectorEnabled(false)
     {
         ///Initialize timers
-        gettimeofday(&lastRenderStartedSlotCallTime, 0);
-        gettimeofday(&lastInputNRenderStartedSlotCallTime, 0);
+        const auto now = std::chrono::system_clock::now();
+        const auto millisecs = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch());
+
+        lastRenderStartedSlotCallTime.tv_sec = millisecs.count() / 1000;
+        lastRenderStartedSlotCallTime.tv_usec = (millisecs.count() % 1000) * 1000;
+
+        lastInputNRenderStartedSlotCallTime.tv_sec = millisecs.count() / 1000;
+        lastInputNRenderStartedSlotCallTime.tv_usec = (millisecs.count() % 1000) * 1000;
     }
 
     void abortPreview_non_blocking();

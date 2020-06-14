@@ -57,12 +57,6 @@ CLANG_DIAG_OFF(uninitialized)
 CLANG_DIAG_ON(deprecated)
 CLANG_DIAG_ON(uninitialized)
 
-GCC_DIAG_UNUSED_LOCAL_TYPEDEFS_OFF
-// /usr/local/include/boost/bind/arg.hpp:37:9: warning: unused typedef 'boost_static_assert_typedef_37' [-Wunused-local-typedef]
-#include <boost/bind.hpp>
-GCC_DIAG_UNUSED_LOCAL_TYPEDEFS_ON
-#include <boost/weak_ptr.hpp>
-
 #include <ofxNatron.h>
 
 #include "Engine/Curve.h"
@@ -113,7 +107,7 @@ getCenterKnobForTracker(Node* node)
     KnobIPtr knob = node->getKnobByName(kTrackCenterName);
 
     assert(knob);
-    KnobDoublePtr dblKnob = boost::dynamic_pointer_cast<KnobDouble>(knob);
+    KnobDoublePtr dblKnob = std::dynamic_pointer_cast<KnobDouble>(knob);
     assert(dblKnob);
 
     return dblKnob;
@@ -2325,7 +2319,7 @@ getCornerPinPoint(Node* node,
     QString name = isFrom ? QString::fromUtf8("from%1").arg(index + 1) : QString::fromUtf8("to%1").arg(index + 1);
     KnobIPtr knob = node->getKnobByName( name.toStdString() );
     assert(knob);
-    KnobDoublePtr  ret = boost::dynamic_pointer_cast<KnobDouble>(knob);
+    KnobDoublePtr  ret = std::dynamic_pointer_cast<KnobDouble>(knob);
     assert(ret);
 
     return ret;

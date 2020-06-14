@@ -30,10 +30,7 @@
 
 #include <cassert>
 #include <list>
-
-#if !defined(Q_MOC_RUN) && !defined(SBK_RUN)
-#include <boost/shared_ptr.hpp>
-#endif
+#include <memory>
 
 #include "Engine/EngineFwd.h"
 
@@ -45,7 +42,7 @@ template<typename EntryType>
 class LockManagerI
 {
 public:
-    typedef boost::shared_ptr<EntryType> EntryTypePtr;
+    typedef std::shared_ptr<EntryType> EntryTypePtr;
 
     LockManagerI() {}
 
@@ -67,7 +64,7 @@ template<typename EntryType>
 class ImageLockerHelper
 {
 public:
-    typedef boost::shared_ptr<EntryType> EntryTypePtr;
+    typedef std::shared_ptr<EntryType> EntryTypePtr;
 
     ImageLockerHelper(LockManagerI<EntryType>* manager)
         : _manager(manager), _entries() {}

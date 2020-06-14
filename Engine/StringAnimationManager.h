@@ -28,9 +28,6 @@
 
 #include "Global/Macros.h"
 
-#if !defined(Q_MOC_RUN) && !defined(SBK_RUN)
-#include <boost/scoped_ptr.hpp>
-#endif
 #include <string>
 #include <map>
 
@@ -81,7 +78,7 @@ public:
 
 private:
 
-    boost::scoped_ptr<StringAnimationManagerPrivate> _imp;
+    std::unique_ptr<StringAnimationManagerPrivate> _imp;
 };
 
 NATRON_NAMESPACE_EXIT

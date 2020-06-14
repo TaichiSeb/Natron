@@ -1653,7 +1653,7 @@ escapeString(const QString& str)
         } else {
 #if PY_MAJOR_VERSION >= 3
             // Python 3 strings are unicode
-            ret.append(QString::fromUTF8("\\u%1").arg(str[i].unicode(), 4, 16, QLatin1Char('0')));
+            ret.append(QString::fromUtf8("\\u%1").arg(str[i].unicode(), 4, 16, QLatin1Char('0')));
 #else
             // Python 2: convert to Utf8
             QByteArray utf8 = QString(str[i]).toUtf8();
@@ -2356,8 +2356,8 @@ exportRotoLayer(int indentLevel,
     QString parentLayerName = QString::fromUtf8( layer->getScriptName().c_str() ) + QString::fromUtf8("_layer");
 
     for (std::list<RotoItemPtr>::const_iterator it = items.begin(); it != items.end(); ++it) {
-        RotoLayerPtr isLayer = boost::dynamic_pointer_cast<RotoLayer>(*it);
-        BezierPtr isBezier = boost::dynamic_pointer_cast<Bezier>(*it);
+        RotoLayerPtr isLayer = std::dynamic_pointer_cast<RotoLayer>(*it);
+        BezierPtr isBezier = std::dynamic_pointer_cast<Bezier>(*it);
 
         if (isBezier) {
             double time;

@@ -28,11 +28,6 @@
 
 #include "Global/Macros.h"
 
-#if !defined(Q_MOC_RUN) && !defined(SBK_RUN)
-#include <boost/shared_ptr.hpp>
-#include <boost/scoped_ptr.hpp>
-#endif
-
 #include <QtCore/QThread>
 
 #include "Engine/EngineFwd.h"
@@ -67,7 +62,7 @@ Q_SIGNALS:
 private:
 
     virtual void run() OVERRIDE FINAL;
-    boost::scoped_ptr<ExistenceCheckerThreadPrivate> _imp;
+    std::unique_ptr<ExistenceCheckerThreadPrivate> _imp;
 };
 
 NATRON_NAMESPACE_EXIT

@@ -28,10 +28,6 @@
 
 #include "Global/Macros.h"
 
-#if !defined(Q_MOC_RUN) && !defined(SBK_RUN)
-#include <boost/scoped_ptr.hpp>
-#endif
-
 #include "Engine/EngineFwd.h"
 
 #ifdef __NATRON_OSX__
@@ -60,7 +56,7 @@ public:
 
 private:
     class Implementation;
-    boost::scoped_ptr<Implementation> _imp; // PIMPL: hide implementation details
+    std::unique_ptr<Implementation> _imp; // PIMPL: hide implementation details
 };
 
 NATRON_NAMESPACE_EXIT

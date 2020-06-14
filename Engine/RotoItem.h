@@ -32,13 +32,6 @@
 #include <set>
 #include <string>
 
-#if !defined(Q_MOC_RUN) && !defined(SBK_RUN)
-#include <boost/scoped_ptr.hpp>
-#include <boost/shared_ptr.hpp>
-#include <boost/make_shared.hpp>
-#include <boost/enable_shared_from_this.hpp>
-#endif
-
 CLANG_DIAG_OFF(deprecated-declarations)
 #include <QtCore/QObject>
 #include <QtCore/QMutex>
@@ -70,7 +63,7 @@ NATRON_NAMESPACE_ENTER
 struct RotoItemPrivate;
 class RotoItem
     : public QObject
-    , public boost::enable_shared_from_this<RotoItem>
+    , public std::enable_shared_from_this<RotoItem>
 {
 public:
 
@@ -95,7 +88,7 @@ public:
                                                const std::string & name,
                                                RotoLayerPtr parent = RotoLayerPtr() )
     {
-        return boost::make_shared<RotoItem>(context, name, parent);
+        return std::make_shared<RotoItem>(context, name, parent);
     }
 
     virtual ~RotoItem();
@@ -189,7 +182,7 @@ private:
     void setGloballyActivated_recursive(bool a);
     void setLocked_recursive(bool locked, RotoItem::SelectionReasonEnum reason);
 
-    boost::scoped_ptr<RotoItemPrivate> _imp;
+    std::unique_ptr<RotoItemPrivate> _imp;
 };
 
 NATRON_NAMESPACE_EXIT

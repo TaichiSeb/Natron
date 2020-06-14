@@ -30,16 +30,9 @@
 
 #include <set>
 #include <list>
+#include <memory>
 
 #include "Global/GlobalDefines.h"
-
-#if !defined(Q_MOC_RUN) && !defined(SBK_RUN)
-#include <boost/scoped_ptr.hpp>
-#include <boost/shared_ptr.hpp>
-#include <boost/weak_ptr.hpp>
-#include <boost/enable_shared_from_this.hpp>
-#include <boost/make_shared.hpp>
-#endif
 
 #include <QtCore/QMutex>
 #include <QtCore/QThread>
@@ -111,7 +104,7 @@ public:
 class TrackerContextPrivate;
 class TrackerContext
     : public QObject
-    , public boost::enable_shared_from_this<TrackerContext>
+    , public std::enable_shared_from_this<TrackerContext>
 , public TrackerParamsProvider
 {
 GCC_DIAG_SUGGEST_OVERRIDE_OFF
@@ -430,7 +423,7 @@ private:
 
     void endSelection(TrackSelectionReason reason);
 
-    boost::scoped_ptr<TrackerContextPrivate> _imp;
+    std::unique_ptr<TrackerContextPrivate> _imp;
 };
 
 struct TrackArgsPrivate;
@@ -483,7 +476,7 @@ public:
 
 private:
 
-    boost::scoped_ptr<TrackArgsPrivate> _imp;
+    std::unique_ptr<TrackArgsPrivate> _imp;
 };
 
 struct TrackSchedulerPrivate;
@@ -546,7 +539,7 @@ private:
     }
 
     virtual ThreadStateEnum threadLoopOnce(const GenericThreadStartArgsPtr& inArgs) OVERRIDE FINAL WARN_UNUSED_RETURN;
-    boost::scoped_ptr<TrackSchedulerPrivate> _imp;
+    std::unique_ptr<TrackSchedulerPrivate> _imp;
 };
 
 NATRON_NAMESPACE_EXIT

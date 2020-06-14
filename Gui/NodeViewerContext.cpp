@@ -68,7 +68,7 @@ public:
     NodeGuiWPtr node;
     ViewerGL* viewer;
     ViewerTab* viewerTab;
-    std::map<KnobIWPtr, KnobGuiPtr> knobsMapping;
+    std::map<KnobIWPtr, KnobGuiPtr, std::owner_less<KnobIWPtr> > knobsMapping;
     QString currentRole, currentTool;
     QToolBar* toolbar;
     std::map<QString, ViewerToolButton*> toolButtons;

@@ -29,10 +29,6 @@
 
 #include "Global/Macros.h"
 
-#if !defined(Q_MOC_RUN) && !defined(SBK_RUN)
-#include <boost/scoped_ptr.hpp>
-#endif
-
 #include "Engine/EngineFwd.h"
 #include "Global/GlobalDefines.h"
 
@@ -85,7 +81,7 @@ public:
 
 private:
 
-    boost::scoped_ptr<GLShaderPrivate> _imp;
+    std::unique_ptr<GLShaderPrivate> _imp;
 };
 
 NATRON_NAMESPACE_EXIT

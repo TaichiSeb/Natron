@@ -30,9 +30,7 @@
 
 #include <vector>
 #include <utility>
-#if !defined(Q_MOC_RUN) && !defined(SBK_RUN)
-#include <boost/scoped_ptr.hpp>
-#endif
+#include <memory>
 
 #include "Global/GLIncludes.h" //!<must be included before QGlWidget because of gl.h and glew.h
 
@@ -636,7 +634,7 @@ private:
 
 private:
     struct Implementation;
-    boost::scoped_ptr<Implementation> _imp; // PIMPL: hide implementation details
+    std::unique_ptr<Implementation> _imp; // PIMPL: hide implementation details
 };
 
 NATRON_NAMESPACE_EXIT

@@ -24,8 +24,12 @@ CONFIG -= qt
 
 include(../global.pri)
 
-!noexpat: CONFIG += expat
- 
+!noexpat {
+  CONFIG += expat
+  include(../global.pri)
+}
+
+
 contains(CONFIG,trace_ofx_actions) {
     DEFINES += OFX_DEBUG_ACTIONS
 }
@@ -70,22 +74,22 @@ win32 {
 
 noexpat {
     SOURCES += \
-    ../libs/OpenFX/HostSupport/expat-2.1.0/lib/xmlparse.c \
-    ../libs/OpenFX/HostSupport/expat-2.1.0/lib/xmltok.c \
-    ../libs/OpenFX/HostSupport/expat-2.1.0/lib/xmltok_impl.c \
+    ../libs/OpenFX/HostSupport/expat-2.2.9/lib/xmlparse.c \
+    ../libs/OpenFX/HostSupport/expat-2.2.9/lib/xmltok.c \
+    ../libs/OpenFX/HostSupport/expat-2.2.9/lib/xmltok_impl.c \
     
     HEADERS += \
-        ../libs/OpenFX/HostSupport/expat-2.1.0/lib/expat.h \
-        ../libs/OpenFX/HostSupport/expat-2.1.0/lib/expat_external.h \
-        ../libs/OpenFX/HostSupport/expat-2.1.0/lib/ascii.h \
-        ../libs/OpenFX/HostSupport/expat-2.1.0/lib/xmltok.h \
-        ../libs/OpenFX/HostSupport/expat-2.1.0/lib/xmltok_impl.h \
-        ../libs/OpenFX/HostSupport/expat-2.1.0/lib/asciitab.h \
-        ../libs/OpenFX/HostSupport/expat-2.1.0/expat_config.h \
+        ../libs/OpenFX/HostSupport/expat-2.2.9/lib/expat.h \
+        ../libs/OpenFX/HostSupport/expat-2.2.9/lib/expat_external.h \
+        ../libs/OpenFX/HostSupport/expat-2.2.9/lib/ascii.h \
+        ../libs/OpenFX/HostSupport/expat-2.2.9/lib/xmltok.h \
+        ../libs/OpenFX/HostSupport/expat-2.2.9/lib/xmltok_impl.h \
+        ../libs/OpenFX/HostSupport/expat-2.2.9/lib/asciitab.h \
+        ../libs/OpenFX/HostSupport/expat-2.2.9/expat_config.h \
 
     DEFINES += HAVE_EXPAT_CONFIG_H
 
-    INCLUDEPATH += $$PWD/../libs/OpenFX/HostSupport/expat-2.1.0/lib
+    INCLUDEPATH += $$PWD/../libs/OpenFX/HostSupport/expat-2.2.9/lib
 }
 
 SOURCES += \

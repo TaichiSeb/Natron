@@ -32,11 +32,6 @@
 
 #include <QtCore/QThread>
 
-#if !defined(Q_MOC_RUN) && !defined(SBK_RUN)
-#include <boost/shared_ptr.hpp>
-#include <boost/scoped_ptr.hpp>
-#endif
-
 #include "Engine/EngineFwd.h"
 
 NATRON_NAMESPACE_ENTER
@@ -91,7 +86,7 @@ Q_SIGNALS:
 private:
 
     virtual void run() OVERRIDE FINAL;
-    boost::scoped_ptr<HistogramCPUPrivate> _imp;
+    std::unique_ptr<HistogramCPUPrivate> _imp;
 };
 
 NATRON_NAMESPACE_EXIT

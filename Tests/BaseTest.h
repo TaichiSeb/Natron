@@ -31,10 +31,6 @@
 
 #include <vector>
 
-#if !defined(Q_MOC_RUN) && !defined(SBK_RUN)
-#include <boost/weak_ptr.hpp>
-#endif
-
 #include <gtest/gtest.h>
 
 CLANG_DIAG_OFF(deprecated)
